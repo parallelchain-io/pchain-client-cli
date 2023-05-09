@@ -1,0 +1,59 @@
+{
+    "arguments": [
+        {"argument_type": "i8", "argument_value":"-1"},
+        {"argument_type": "Vec<i8>", "argument_value":"[-1, -3, -5]"},
+        {"argument_type": "Vec<Vec<i8>>", "argument_value":"[[-1, -3], [-5]]"},
+        {"argument_type": "Vec<Opion<i8>>", "argument_value":"[-1, null, -5]"},
+        {"argument_type": "Opion<Vec<i8>>", "argument_value":"[-1, -3, -5]"},
+        {"argument_type": "Opion<Vec<i8>>", "argument_value":"null"},
+
+        {"argument_type": "i16", "argument_value":"-30000"},
+        {"argument_type": "Vec<i16>", "argument_value":"[-10001, -30001, -50001]"},
+        {"argument_type": "Vec<Vec<i16>>", "argument_value":"[[-10001, -30001], [-50001]]"},
+        {"argument_type": "Vec<Opion<i16>>", "argument_value":"[-10001, null, -50001]"},
+        {"argument_type": "Opion<Vec<i16>", "argument_value":"[-10001, -30001, -50001]"},
+        {"argument_type": "Opion<Vec<i16>>", "argument_value":"null"},
+        
+        {"argument_type": "i32", "argument_value":"-1094967295"},
+        {"argument_type": "Vec<i32>", "argument_value":"[-1,0,1]"},
+
+        {"argument_type": "i64", "argument_value":"-9046744073709551615"},
+        {"argument_type": "Vec<i64>", "argument_value":"[-1,0,1,65656565]"},
+
+        {"argument_type": "i128", "argument_value":"-9046744073709551615"},
+        {"argument_type": "Vec<i128>", "argument_value":"[-1,0,1,-65656565,0]"},
+
+        {"argument_type": "u8", "argument_value":"255"},
+        {"argument_type": "Vec<u8>", "argument_value":"[0]"},
+
+        {"argument_type": "u16", "argument_value":"65535"},
+        {"argument_type": "Vec<u16>", "argument_value":"[65535,6535]"},
+
+        {"argument_type": "u32", "argument_value":"4294967295"},
+        {"argument_type": "Vec<u32>", "argument_value":"[65535,6535,1919]"},
+
+        {"argument_type": "u64", "argument_value":"18446744073709551615"},
+        {"argument_type": "Vec<u64>", "argument_value":"[65535,6535,1919112123223]"},
+
+        {"argument_type": "u128", "argument_value":"18446744073709551616"},
+        {"argument_type": "Vec<u128>", "argument_value":"[65535,6535,1919112123223,123123,124124,125152]"},
+
+        {"argument_type": "bool", "argument_value": "true"},
+        {"argument_type": "Vec<bool>", "argument_value": "[true,false,true]"},
+        {"argument_type": "Vec<Vec<bool>>", "argument_value":"[[true, false], [true]]"},
+        {"argument_type": "Vec<Opion<bool>>", "argument_value":"[true,false,nul]"},
+        {"argument_type": "Opion<Vec<bool>", "argument_value":"[true,false,true]"},
+        {"argument_type": "Opion<Vec<bool>", "argument_value":"null"},
+
+        {"argument_type": "String", "argument_value": "\"string data\""},
+        {"argument_type": "String", "argument_value": "\"string \\\"test\\\" data\""},
+        {"argument_type": "Vec<String>", "argument_value": "[\"string data\", \"asdaf\", \"1d1 as2\"]"},
+        {"argument_type": "Vec<Vec<String>>", "argument_value":"[[\"string data\"], [\"asdaf\", \"1d1 as2\"]]"},
+        {"argument_type": "Vec<Opion<String>>", "argument_value":"[\"string data\", null, \"1d1 as2\"]"},
+        {"argument_type": "Opion<Vec<String>", "argument_value":"[\"string data\", \"asdaf\", \"1d1 as2\"]"},
+        {"argument_type": "Opion<Vec<String>", "argument_value":"null"},
+
+        {"argument_type": "[u8; 32]", "argument_value": "[1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2]"},
+        {"argument_type": "[u8, 64]", "argument_value": "[1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2]"}
+    ]
+}
