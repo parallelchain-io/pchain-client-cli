@@ -5,12 +5,13 @@
 
 //! Methods related to subcommand `submit` in `pchain-client`.
 
-use pchain_client_rs::{Client,base64url_to_bytes32};
+use pchain_client::Client;
 use std::path::PathBuf;
 
 use crate::display_msg::DisplayMsg;
 use crate::command::{Transaction, CreateTx, DepositTx, StakeTx, PoolTx};
-use crate::display_types::{CallArgument, SubmitTx, TxCommand, check_contract_exist};
+use crate::display_types::{SubmitTx, TxCommand, check_contract_exist};
+use crate::parser::{base64url_to_public_address, call_arguments_from_json};
 use crate::result::{ClientResponse, display_beautified_rpc_result};
 use crate::config::Config;
 use crate::utils::read_file_to_utf8string;
@@ -68,7 +69,7 @@ pub async fn match_submit_subcommand(tx_subcommand: Transaction, config: Config)
                 priority_fee_per_gas,
             };
             
-            match tx.to_json_file(&destination.unwrap_or("tx.json".to_string())){
+            match tx.to_json_file(&destination.unwrap_or_else(|| "tx.json".to_string())){
                 Ok(path) => println!("{}", DisplayMsg::SuccessCreateFile(String::from("Transaction"), PathBuf::from(path))),
                 Err(e) => println!("{}", e)
             }
@@ -99,8 +100,8 @@ pub async fn match_submit_subcommand(tx_subcommand: Transaction, config: Config)
 fn subcommand_parser(tx_subcommand: CreateTx) -> TxCommand{
     match tx_subcommand {
         CreateTx::Transfer { recipient: target_address, amount } => {
-            if let Err(e) = base64url_to_bytes32(&target_address) {
-                println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("target"), target_address, e));
+            if let Err(e) = base64url_to_public_address(&target_address) {
+                println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("target"), target_address, e.to_string()));
                 std::process::exit(1);
             };
             TxCommand::Transfer{recipient: target_address, amount}
@@ -116,8 +117,8 @@ fn subcommand_parser(tx_subcommand: CreateTx) -> TxCommand{
             TxCommand::Deploy{contract: contract_path, cbi_version}
         },
         CreateTx::Call { target: target_address, method, arguments, amount } => {
-            if let Err(e) = base64url_to_bytes32(&target_address) {
-                println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("target"), target_address, e));
+            if let Err(e) = base64url_to_public_address(&target_address) {
+                println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("target"), target_address, e.to_string()));
                 std::process::exit(1);
             };
 
@@ -132,24 +133,17 @@ fn subcommand_parser(tx_subcommand: CreateTx) -> TxCommand{
                         }
                     };
                     
-                    let call = match pchain_client_rs::CallArguments::from_json(&arguments_json) {
+                    let call_arguments = match call_arguments_from_json(&arguments_json) {
                         Ok(result) => result,
                         Err(e) => {
-                            println!("{}", DisplayMsg::FailToDecodeJson(String::from("call argument"), path_to_json, e));
+                            println!("{}", DisplayMsg::FailToDecodeJson(String::from("call argument"), path_to_json, e.to_string()));
                             std::process::exit(1);
                         }
                     };
 
-                    if call.arguments.len() == 0 { 
+                    if call_arguments.is_empty() { 
                         None 
                     } else { 
-                        let mut call_arguments = Vec::new();
-                        for argument in call.arguments {
-                                call_arguments.push(
-                                    CallArgument{ argument_type: argument.0, argument_value: argument.1  }
-                                );
-                        }
-
                         Some(call_arguments)
                     }
                 },
@@ -166,29 +160,29 @@ fn subcommand_parser(tx_subcommand: CreateTx) -> TxCommand{
         CreateTx::Deposit { deposit_tx_subcommand } => {
             match deposit_tx_subcommand {
                 DepositTx::Create { operator, balance, auto_stake_rewards } => {
-                    if let Err(e) = base64url_to_bytes32(&operator) {
-                        println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e));
+                    if let Err(e) = base64url_to_public_address(&operator) {
+                        println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e.to_string()));
                         std::process::exit(1);
                     };
                     TxCommand::CreateDeposit{operator, balance, auto_stake_rewards}                       
                 },
                 DepositTx::UpdateSettings { operator, auto_stake_rewards } => {
-                    if let Err(e) = base64url_to_bytes32(&operator) {
-                        println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e));
+                    if let Err(e) = base64url_to_public_address(&operator) {
+                        println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e.to_string()));
                         std::process::exit(1);
                     };
                     TxCommand::SetDepositSettings{operator, auto_stake_rewards}
                 },
                 DepositTx::TopUp { operator, amount } => {
-                    if let Err(e) = base64url_to_bytes32(&operator) {
-                        println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e));
+                    if let Err(e) = base64url_to_public_address(&operator) {
+                        println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e.to_string()));
                         std::process::exit(1);
                     };
                     TxCommand::TopUpDeposit{operator, amount}                    
                 },
                 DepositTx::Withdraw { operator, max_amount } => {
-                    if let Err(e) = base64url_to_bytes32(&operator) {
-                        println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e));
+                    if let Err(e) = base64url_to_public_address(&operator) {
+                        println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e.to_string()));
                         std::process::exit(1);
                     };
                     TxCommand::WithdrawDeposit{operator, max_amount}                      
@@ -198,15 +192,15 @@ fn subcommand_parser(tx_subcommand: CreateTx) -> TxCommand{
         CreateTx::Stake { stake_tx_subcommand } => {
             match stake_tx_subcommand {
                 StakeTx::Stake { operator, max_amount } => {
-                    if let Err(e) = base64url_to_bytes32(&operator) {
-                        println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e));
+                    if let Err(e) = base64url_to_public_address(&operator) {
+                        println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e.to_string()));
                         std::process::exit(1);
                     };
                     TxCommand::StakeDeposit{operator, max_amount}
                 },
                 StakeTx::Unstake { operator, max_amount } => {
-                    if let Err(e) = base64url_to_bytes32(&operator) {
-                        println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e));
+                    if let Err(e) = base64url_to_public_address(&operator) {
+                        println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e.to_string()));
                         std::process::exit(1);
                     };
                     TxCommand::UnstakeDeposit{operator, max_amount}                     

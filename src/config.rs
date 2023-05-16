@@ -50,7 +50,7 @@ impl Config {
                     };
 
                     if let Err(e) = std::fs::File::create(&default_config_path) {
-                        println!("{}", DisplayMsg::FailToCreateFile(String::from("config"), default_config_path.to_path_buf(), e.to_string()));
+                        println!("{}", DisplayMsg::FailToCreateFile(String::from("config"), default_config_path, e.to_string()));
                         std::process::exit(1);
                     };
 
@@ -58,14 +58,13 @@ impl Config {
                     let toml_string = toml::to_string(&empty_config).expect(&DisplayMsg::FailToTOMLEncode(String::from("config"), get_config_path(), String::new()).to_string());
                 
                     if let Err(e) = std::fs::write(&default_config_path, toml_string){
-                        println!("{}", DisplayMsg::FailToWriteFile(String::from("config"), default_config_path.to_path_buf(), e.to_string()));
+                        println!("{}", DisplayMsg::FailToWriteFile(String::from("config"), default_config_path, e.to_string()));
                         std::process::exit(1);
                     };
                 };
 
-                let config_path = default_config_path.to_path_buf();
-                std::fs::read_to_string(default_config_path)
-                        .expect(&DisplayMsg::FailToOpenOrReadFile(String::from("config") , config_path, String::new()).to_string())
+                std::fs::read_to_string(default_config_path.clone())
+                        .expect(&DisplayMsg::FailToOpenOrReadFile(String::from("config") , default_config_path, String::new()).to_string())
             }; 
 
             toml::from_str(&read_config(default_config_path.clone()))
@@ -79,7 +78,7 @@ impl Config {
     //  # Arguments
     //  * `Config` - RPC providers config url
     pub fn get_url(&self) -> &str {
-        if self.url == "" {
+        if self.url.is_empty() {
             println!("{}", DisplayMsg::NotYetSetRPCProvider);
             std::process::exit(1);
         } 
@@ -156,7 +155,7 @@ pub fn get_config_path() -> PathBuf {
 //  * 
 pub fn get_keypair_path() -> PathBuf {
     let mut default_keypair_path = get_home_dir();
-    default_keypair_path.push(&PCHAIN_CLI_KEYPAIR_FILENAME);
+    default_keypair_path.push(PCHAIN_CLI_KEYPAIR_FILENAME);
 
     default_keypair_path
 }
@@ -166,7 +165,7 @@ pub fn get_keypair_path() -> PathBuf {
 //  * 
 pub fn get_hash_path() -> PathBuf {
     let mut default_keypair_path = get_home_dir();
-    default_keypair_path.push(&PCHAIN_CLI_PASSPHASE_FILENAME);
+    default_keypair_path.push(PCHAIN_CLI_PASSPHASE_FILENAME);
 
     default_keypair_path
 }

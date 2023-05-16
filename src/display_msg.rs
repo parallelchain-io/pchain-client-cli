@@ -9,6 +9,7 @@ pub type CLIArgs = String;
 pub type ErrorMsg = String;
 pub type URL = String;
 
+#[derive(Debug)]
 pub enum DisplayMsg {
     ///////////////////////////
     // Argument Decode Error //
@@ -36,15 +37,15 @@ pub enum DisplayMsg {
     // Query Msg //
     ///////////////
     CannotFindLatestBlock,
-    CannotFindReleventBlock,
-    CannotFindReleventBlockHeader,
-    CannotFindReleventTransaction,
-    CannotFindReleventReceipt,
-    CannotFindReleventState,
+    CannotFindRelevantBlock,
+    CannotFindRelevantBlockHeader,
+    CannotFindRelevantTransaction,
+    CannotFindRelevantReceipt,
+    CannotFindRelevantState,
     CannotFindOperator,
     CannotFindOperatorOwnerPair,
     CannotFindValidatorSet,
-    CannotFindReleventContractCode,
+    CannotFindRelevantContractCode,
 
     /////////////////////
     // Transaction Msg //
@@ -101,6 +102,17 @@ pub enum DisplayMsg {
     FailToSetupPassword(ErrorMsg),
     FailtoEncrypt(ErrorMsg),
     FailtoDecrypt(ErrorMsg),
+
+    //////////////////
+    /// Parser Msg  //
+    //////////////////
+    InvalidJson(serde_json::Error),
+    MissingFieldinJson(ErrorMsg),
+    FailToBase64DecodeKeypair,
+    FailToConvertReturnDataToTargetType(ErrorMsg),
+    FailToSerializeCallArgument(ErrorMsg),
+    InvalidBase64Encoding(IdentityName),
+    IncorrectBase64urlLength,
 }
 
 impl fmt::Display for DisplayMsg {
@@ -143,23 +155,23 @@ impl fmt::Display for DisplayMsg {
             ///////////////
             DisplayMsg::CannotFindLatestBlock => 
                 write!(f, "Error: Cannot find find latest block."),
-            DisplayMsg::CannotFindReleventBlock =>
-                write!(f, "Cannot find relevent block."),
-            DisplayMsg::CannotFindReleventBlockHeader =>
-                write!(f, "Cannot find relevent block header"),
-            DisplayMsg::CannotFindReleventTransaction => 
-                write!(f, "Cannot find relevent transaction."),
-            DisplayMsg::CannotFindReleventReceipt => 
-                write!(f, "Cannot find relevent receipt."),
-            DisplayMsg::CannotFindReleventState => 
-                write!(f, "Cannot find relevent state."),
+            DisplayMsg::CannotFindRelevantBlock =>
+                write!(f, "Cannot find relevant block."),
+            DisplayMsg::CannotFindRelevantBlockHeader =>
+                write!(f, "Cannot find relevant block header"),
+            DisplayMsg::CannotFindRelevantTransaction => 
+                write!(f, "Cannot find relevant transaction."),
+            DisplayMsg::CannotFindRelevantReceipt => 
+                write!(f, "Cannot find relevant receipt."),
+            DisplayMsg::CannotFindRelevantState => 
+                write!(f, "Cannot find relevant state."),
             DisplayMsg::CannotFindOperator => 
-                write!(f, "Cannot find relevent operator."),
+                write!(f, "Cannot find relevant operator."),
             DisplayMsg::CannotFindOperatorOwnerPair => 
-                write!(f, "Cannot find relevent operator owner pair."),
+                write!(f, "Cannot find relevant operator owner pair."),
             DisplayMsg::CannotFindValidatorSet =>
                 write!(f, "No validator set exists at the requested time frame."),
-            DisplayMsg::CannotFindReleventContractCode =>
+            DisplayMsg::CannotFindRelevantContractCode =>
                 write!(f, "No contract code is associated with this address."),
 
             /////////////////////
@@ -257,6 +269,25 @@ impl fmt::Display for DisplayMsg {
                 write!(f, "Fail to encrypt data. {:#?}", error),
             DisplayMsg::FailtoDecrypt(error) =>
                 write!(f, "Fail to decrypt data. {:#?}", error),
+
+            /////////////////
+            // Parser Msg  //
+            /////////////////
+            DisplayMsg::InvalidJson(e) => 
+                write!(f, "Provided json is not valid. {e}"),
+            DisplayMsg::MissingFieldinJson(field_name) => 
+                write!(f, "Provided json does not contain field with name : {field_name}"),
+            DisplayMsg::FailToBase64DecodeKeypair => 
+                write!(f, "Fail to base64 decode keypair."),
+            DisplayMsg::FailToConvertReturnDataToTargetType(e) => 
+                write!(f, "Fail to convert to target data type. {e}"),
+            DisplayMsg::FailToSerializeCallArgument(e) =>
+                write!(f, "Fail to serialize call argument. {e}"),
+            DisplayMsg::InvalidBase64Encoding(identity) => 
+                write!(f, "Provided {identity} has invalid base64 encoding"),
+            DisplayMsg::IncorrectBase64urlLength => 
+                write!(f, "Incorrect length. Correct length should be 32 bytes long."),
+            
         }
     }    
 }

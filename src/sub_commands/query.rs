@@ -7,10 +7,11 @@
 
 use std::collections::{HashSet, HashMap};
 use std::path::PathBuf;
-use pchain_client_rs::{Client, base64url_to_bytes32};
+use pchain_client::Client;
 use pchain_types::rpc::*;
 
 use crate::command::{Query, Validators};
+use crate::parser::{base64url_to_public_address, call_arguments_from_json};
 use crate::result::{ClientResponse, display_beautified_rpc_result};
 use crate::display_msg::DisplayMsg;
 use crate::display_types::CallArgument;
@@ -29,10 +30,10 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
 
     match query_subcommand {
         Query::Balance{address} => {
-            let sender_address: pchain_types::PublicAddress = match base64url_to_bytes32(&address) {
+            let sender_address: pchain_types::cryptography::PublicAddress = match base64url_to_public_address(&address) {
                 Ok(addr) => addr,
                 Err(e) => {
-                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("sender"), address, e));
+                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("sender"), address, e.to_string()));
                     std::process::exit(1);
                 }
             };
@@ -48,10 +49,10 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
             display_beautified_rpc_result(ClientResponse::Balance(response));
         },
         Query::Nonce{address} => {
-            let sender_address: pchain_types::PublicAddress = match base64url_to_bytes32(&address) {
+            let sender_address: pchain_types::cryptography::PublicAddress = match base64url_to_public_address(&address) {
                 Ok(addr) => addr,
                 Err(e) => {
-                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("sender"), address, e));
+                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("sender"), address, e.to_string()));
                     std::process::exit(1);
                 }
             };
@@ -67,10 +68,10 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
             display_beautified_rpc_result(ClientResponse::Nonce(response));
         },
         Query::Contract{address, destination} => {
-            let contract_address: pchain_types::PublicAddress = match base64url_to_bytes32(&address) {
+            let contract_address: pchain_types::cryptography::PublicAddress = match base64url_to_public_address(&address) {
                 Ok(addr) => addr,
                 Err(e) => {
-                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("contract"), address, e));
+                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("contract"), address, e.to_string()));
                     std::process::exit(1);
                 }
             };     
@@ -144,7 +145,7 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                         std::process::exit(1);
                     },
                     _ => {
-                        println!("{}", DisplayMsg::CannotFindReleventBlock);
+                        println!("{}", DisplayMsg::CannotFindRelevantBlock);
                         std::process::exit(1);              
                                     
                     }
@@ -168,10 +169,10 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                 };
 
             } else if let Some(hash) = block_hash {
-                let block_hash: pchain_types::Sha256Hash = match base64url_to_bytes32(&hash) {
+                let block_hash: pchain_types::cryptography::Sha256Hash = match base64url_to_public_address(hash) {
                     Ok(hash) => hash,
                     Err(e) => {
-                        println!("{}", DisplayMsg::FailToDecodeBase64Hash(String::from("block"), String::from(hash), e));
+                        println!("{}", DisplayMsg::FailToDecodeBase64Hash(String::from("block"), String::from(hash), e.to_string()));
                         std::process::exit(1);
                     }
                 };
@@ -193,10 +194,10 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                     },
                 }
             } else if let Some(hash) = tx_hash {
-                let transaction_hash: pchain_types::Sha256Hash = match base64url_to_bytes32(&hash) {
+                let transaction_hash: pchain_types::cryptography::Sha256Hash = match base64url_to_public_address(hash) {
                     Ok(hash) => hash,
                     Err(e) => {
-                        println!("{}", DisplayMsg::FailToDecodeBase64Hash(String::from("transaction"), String::from(hash), e));
+                        println!("{}", DisplayMsg::FailToDecodeBase64Hash(String::from("transaction"), String::from(hash), e.to_string()));
                         std::process::exit(1);
                     }
                 };
@@ -212,7 +213,7 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                         std::process::exit(1);
                     },
                     _ => {
-                        println!("{}", DisplayMsg::CannotFindReleventBlock);
+                        println!("{}", DisplayMsg::CannotFindRelevantBlock);
                         std::process::exit(1);              
                                     
                     }
@@ -237,10 +238,10 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
             }
         },
         Query::Tx { tx_hash } => {        
-            let tx_hash: pchain_types::Sha256Hash = match base64url_to_bytes32(&tx_hash) {
+            let tx_hash: pchain_types::cryptography::Sha256Hash = match base64url_to_public_address(&tx_hash) {
                 Ok(hash) => hash,
                 Err(e) => {
-                    println!("{}", DisplayMsg::FailToDecodeBase64Hash(String::from("transaction"), tx_hash, e));
+                    println!("{}", DisplayMsg::FailToDecodeBase64Hash(String::from("transaction"), tx_hash, e.to_string()));
                     std::process::exit(1);
                 }
             };
@@ -253,10 +254,10 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                          
         },
         Query::Receipt {tx_hash} => {
-            let tx_hash: pchain_types::Sha256Hash = match base64url_to_bytes32(&tx_hash) {
+            let tx_hash: pchain_types::cryptography::Sha256Hash = match base64url_to_public_address(&tx_hash) {
                 Ok(hash) => hash,
                 Err(e) => {
-                    println!("{}", DisplayMsg::FailToDecodeBase64Hash(String::from("transaction"), tx_hash, e));
+                    println!("{}", DisplayMsg::FailToDecodeBase64Hash(String::from("transaction"), tx_hash, e.to_string()));
                     std::process::exit(1);
                 }
             };
@@ -268,14 +269,14 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
             display_beautified_rpc_result(ClientResponse::Receipt(response));
         },
         Query::Storage { address, key } => {
-            let contract_address: pchain_types::PublicAddress = match base64url_to_bytes32(&address) {
+            let contract_address: pchain_types::cryptography::PublicAddress = match base64url_to_public_address(&address) {
                 Ok(addr) => addr,
                 Err(e) => {
-                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("contract"), address, e));
+                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("contract"), address, e.to_string()));
                     std::process::exit(1);
                 }
             };
-            let world_state_key: Vec<u8> = match pchain_types::Base64URL::decode(&key) {
+            let world_state_key: Vec<u8> = match base64url::decode(&key) {
                 Ok(k) => k,
                 Err(e) => {
                     println!("{}", DisplayMsg::FailToDecodeBase64String(String::from("world state key"), key, e.to_string()));
@@ -294,10 +295,10 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
             display_beautified_rpc_result(ClientResponse::State(response));
         },
         Query::View { target, method, arguments} => {
-            let contract_address: pchain_types::PublicAddress = match base64url_to_bytes32(&target) {
+            let contract_address: pchain_types::cryptography::PublicAddress = match base64url_to_public_address(&target) {
                 Ok(addr) => addr,
                 Err(e) => {
-                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("target"), target, e));
+                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("target"), target, e.to_string()));
                     std::process::exit(1);
                 }
             };
@@ -313,24 +314,17 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                         }
                     };
 
-                    let call = match pchain_client_rs::CallArguments::from_json(&arguments_json) {
+                    let call_arguments = match call_arguments_from_json(&arguments_json) {
                         Ok(result) => result,
                         Err(e) => {
-                            println!("{}", DisplayMsg::FailToDecodeJson(String::from("call argument"), path_to_json, e));
+                            println!("{}", DisplayMsg::FailToDecodeJson(String::from("call argument"), path_to_json, e.to_string()));
                             std::process::exit(1);
                         }
                     };
 
-                    if call.arguments.len() == 0 { 
+                    if call_arguments.is_empty() { 
                         None 
                     } else { 
-                       let mut call_arguments = Vec::new();
-                       for argument in call.arguments {
-                            call_arguments.push(
-                                CallArgument{ argument_type: argument.0, argument_value: argument.1  }
-                            );
-                       }
-        
                        Some(call_arguments)
                     }
                 },
@@ -394,18 +388,18 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
             }
         },
         Query::Deposit { operator, owner } => {
-            let operator: pchain_types::PublicAddress = match base64url_to_bytes32(&operator) {
+            let operator: pchain_types::cryptography::PublicAddress = match base64url_to_public_address(&operator) {
                 Ok(addr) => addr,
                 Err(e) => {
-                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e));
+                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e.to_string()));
                     std::process::exit(1);
                 }
             };
 
-            let owner: pchain_types::PublicAddress = match base64url_to_bytes32(&owner) {
+            let owner: pchain_types::cryptography::PublicAddress = match base64url_to_public_address(&owner) {
                 Ok(addr) => addr,
                 Err(e) => {
-                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("owner"), owner, e));
+                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("owner"), owner, e.to_string()));
                     std::process::exit(1);
                 }
             };
@@ -417,10 +411,10 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
             display_beautified_rpc_result(ClientResponse::Deposit(response))
         },
         Query::Pool { operator, with_stakes} => {
-            let operator: pchain_types::PublicAddress = match base64url_to_bytes32(&operator) {
+            let operator: pchain_types::cryptography::PublicAddress = match base64url_to_public_address(&operator) {
                 Ok(addr) => addr,
                 Err(e) => {
-                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e));
+                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e.to_string()));
                     std::process::exit(1);
                 }
             };
@@ -433,18 +427,18 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
             display_beautified_rpc_result(ClientResponse::Pool(response))
         },
         Query::Stake { operator, owner } => {
-            let operator: pchain_types::PublicAddress = match base64url_to_bytes32(&operator) {
+            let operator: pchain_types::cryptography::PublicAddress = match base64url_to_public_address(&operator) {
                 Ok(addr) => addr,
                 Err(e) => {
-                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e));
+                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e.to_string()));
                     std::process::exit(1);
                 },
             };
 
-            let owner: pchain_types::PublicAddress = match base64url_to_bytes32(&owner) {
+            let owner: pchain_types::cryptography::PublicAddress = match base64url_to_public_address(&owner) {
                 Ok(addr) => addr,
                 Err(e) => {
-                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("owner"), owner, e));
+                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("owner"), owner, e.to_string()));
                     std::process::exit(1);
                 }
             };

@@ -3,16 +3,16 @@
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 */
 
-//! Data structures which convert pchain_types::Command to a format which can be displayed on the terminal.
+//! Data structures which convert pchain_types::blockchain::Command to a format which can be displayed on the terminal.
 use serde::{Deserialize, Serialize};
 use std::convert::TryFrom;
-use pchain_client_rs::base64url_to_bytes32;
+use pchain_types::{ blockchain::Command, runtime::*, cryptography::PublicAddress};
 use crate::display_msg::DisplayMsg;
 use crate::command::Base64String;
 use crate::display_types::read_contract_code;
+use crate::parser::{base64url_to_public_address, serialize_call_arguments};
 
-/// [TxCommand] denotes a display_types equivalent of
-/// pchain_types::Command.
+/// [TxCommand] denotes a display_types equivalent of pchain_types::blockchain::Command.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TxCommand {
      Call {
@@ -64,35 +64,35 @@ pub enum TxCommand {
      NextEpoch,
 }
 
-impl TryFrom<TxCommand> for pchain_types::Command {
+impl TryFrom<TxCommand> for Command {
      type Error = String;
  
      fn try_from(command: TxCommand) -> Result<Self, Self::Error> {
          match command {
              TxCommand::Call{ target, method, arguments, amount } => {
-                 let target: pchain_types::PublicAddress = match base64url_to_bytes32(&target) {
+                 let target: PublicAddress = match base64url_to_public_address(&target) {
                      Ok(addr) => addr,
                      Err(e) => {
-                        return Err(DisplayMsg::FailToDecodeBase64Address(String::from("target"), target, e).to_string());
+                        return Err(DisplayMsg::FailToDecodeBase64Address(String::from("target"), target, e.to_string()).to_string());
                      },
                  };
  
-                 Ok(pchain_types::Command::Call {
+                 Ok(Command::Call (CallInput{
                      target, method, arguments: CallArgument::serialize_arguments(arguments), amount
-                 })    
+                 }))    
          
              },
              TxCommand::Transfer { recipient, amount } => {
-                 let recipient: pchain_types::PublicAddress = match base64url_to_bytes32(&recipient) {
+                 let recipient: PublicAddress = match base64url_to_public_address(&recipient) {
                      Ok(addr) => addr,
                      Err(e) => {
-                        return Err(DisplayMsg::FailToDecodeBase64Address(String::from("recipient"), recipient, e).to_string());
+                        return Err(DisplayMsg::FailToDecodeBase64Address(String::from("recipient"), recipient, e.to_string()).to_string());
                      },
                  };
          
-                 Ok(pchain_types::Command::Transfer{
+                 Ok(Command::Transfer(TransferInput{
                      recipient, amount
-                 })
+                 }))
              },
              TxCommand::Deploy { contract, cbi_version } => {
                  let contract_code = match read_contract_code(&contract) {
@@ -102,98 +102,98 @@ impl TryFrom<TxCommand> for pchain_types::Command {
                      },
                  };
  
-                 Ok(pchain_types::Command::Deploy{
+                 Ok(Command::Deploy(DeployInput{
                      contract: contract_code, cbi_version
-                 })
+                 }))
  
              }
              TxCommand::CreatePool { commission_rate } => {
-                 Ok(pchain_types::Command::CreatePool{
+                 Ok(Command::CreatePool(CreatePoolInput{
                      commission_rate
-                 })
+                 }))
              },
              TxCommand::DeletePool => {
-                 Ok(pchain_types::Command::DeletePool{})
+                 Ok(Command::DeletePool)
              },
              TxCommand::SetPoolSettings { commission_rate } => {
-                 Ok(pchain_types::Command::SetPoolSettings{
+                 Ok(Command::SetPoolSettings(SetPoolSettingsInput{
                      commission_rate
-                 })
+                 }))
              },
              TxCommand::CreateDeposit { operator, balance, auto_stake_rewards } => {
-                 let operator: pchain_types::PublicAddress = match base64url_to_bytes32(&operator) {
+                 let operator: PublicAddress = match base64url_to_public_address(&operator) {
                      Ok(addr) => addr,
                      Err(e) => {
-                        return Err(DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e).to_string());
+                        return Err(DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e.to_string()).to_string());
                      },
                  };
          
-                 Ok(pchain_types::Command::CreateDeposit{
+                 Ok(Command::CreateDeposit(CreateDepositInput{
                      operator, balance, auto_stake_rewards
-                 })
+                 }))
              },
              TxCommand::SetDepositSettings { operator, auto_stake_rewards } => {
-                 let operator: pchain_types::PublicAddress = match base64url_to_bytes32(&operator) {
+                 let operator: PublicAddress = match base64url_to_public_address(&operator) {
                      Ok(addr) => addr,
                      Err(e) => {
-                        return Err(DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e).to_string());
+                        return Err(DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e.to_string()).to_string());
                      },
                  };
          
-                 Ok(pchain_types::Command::SetDepositSettings{
+                 Ok(Command::SetDepositSettings(SetDepositSettingsInput{
                      operator, auto_stake_rewards
-                 })
+                 }))
              },
              TxCommand::TopUpDeposit { operator, amount } => {
-                 let operator: pchain_types::PublicAddress = match base64url_to_bytes32(&operator) {
+                 let operator: PublicAddress = match base64url_to_public_address(&operator) {
                      Ok(addr) => addr,
                      Err(e) => {
-                        return Err(DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e).to_string());
+                        return Err(DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e.to_string()).to_string());
                      },
                  };
          
-                 Ok(pchain_types::Command::TopUpDeposit{
+                 Ok(Command::TopUpDeposit(TopUpDepositInput{
                      operator, amount
-                 })
+                 }))
              },
              TxCommand::WithdrawDeposit { operator, max_amount } => {
-                 let operator: pchain_types::PublicAddress = match base64url_to_bytes32(&operator) {
+                 let operator: PublicAddress = match base64url_to_public_address(&operator) {
                      Ok(addr) => addr,
                      Err(e) => {
-                        return Err(DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e).to_string());
+                        return Err(DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e.to_string()).to_string());
                      },
                  };
          
-                 Ok(pchain_types::Command::WithdrawDeposit {
+                 Ok(Command::WithdrawDeposit (WithdrawDepositInput{
                      operator, max_amount
-                 })
+                 }))
              },
              TxCommand::StakeDeposit { operator, max_amount } => {
-                 let operator: pchain_types::PublicAddress = match base64url_to_bytes32(&operator) {
+                 let operator: PublicAddress = match base64url_to_public_address(&operator) {
                      Ok(addr) => addr,
                      Err(e) => {
-                        return Err(DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e).to_string());
+                        return Err(DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e.to_string()).to_string());
                      },
                  };
          
-                 Ok(pchain_types::Command::StakeDeposit {
+                 Ok(Command::StakeDeposit (StakeDepositInput{
                      operator, max_amount
-                 })
+                 }))
              },
              TxCommand::UnstakeDeposit { operator, max_amount } => {
-                 let operator: pchain_types::PublicAddress = match base64url_to_bytes32(&operator) {
+                 let operator: PublicAddress = match base64url_to_public_address(&operator) {
                      Ok(addr) => addr,
                      Err(e) => {
-                        return Err(DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e).to_string());
+                        return Err(DisplayMsg::FailToDecodeBase64Address(String::from("operator"), operator, e.to_string()).to_string());
                      },
                  };
          
-                 Ok(pchain_types::Command::UnstakeDeposit {
+                 Ok(Command::UnstakeDeposit (UnstakeDepositInput{
                      operator, max_amount
-                 })
+                 }))
              },
              TxCommand::NextEpoch => {
-                 Ok(pchain_types::Command::NextEpoch {})
+                 Ok(Command::NextEpoch )
              },
          }
      }
@@ -220,10 +220,11 @@ impl CallArgument{
             }
         
             Some(arguments.unwrap().into_iter().map(|args| {
-                match pchain_client_rs::serialize_call_arguments(&args.argument_value, &args.argument_type) {
+                println!("{:?}", args);
+                match serialize_call_arguments(&args.argument_value, &args.argument_type) {
                     Ok(v) => v,
                     Err(e) => {
-                        println!("{}", DisplayMsg::FailToParseCallArguments(e));
+                        println!("{}", DisplayMsg::FailToParseCallArguments(e.to_string()));
                         std::process::exit(1);
                     }
                 }

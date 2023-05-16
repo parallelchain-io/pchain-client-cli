@@ -6,15 +6,13 @@
 //! Data structures which convert pchain_types::Transaction to a format which can be displayed on the terminal.
 
 use dunce;
-use pchain_client_rs::base64url_to_bytes32;
-use pchain_types::{Base64URL, SignedTx};
 use serde::Serialize;
 use serde_json::Value;
 use serde_json::json;
 use std::convert::TryFrom;
-use std::path::PathBuf;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::ffi::OsStr;
+use pchain_types::{ blockchain::Command, runtime::*};
 
 use crate::display_msg::{DisplayMsg};
 use crate::command::Base64String;
@@ -23,8 +21,7 @@ use crate::keypair::{get_keypair_from_json};
 use crate::config::get_keypair_path;
 use crate::utils::{read_file_to_utf8string, read_file};
 
-/// [Transaction] denotes a display_types equivalent of
-/// pchain_types::Transaction.
+/// [Transaction] denotes a display_types equivalent of pchain_types::blockchain::Transaction.
 #[derive(Serialize, Debug)]
 pub struct Transaction {
     pub commands: Vec<Value>,
@@ -37,37 +34,30 @@ pub struct Transaction {
     pub signature: Base64String,
 }
 
-impl From<pchain_types::SignedTx> for Transaction { 
-    fn from(sign_tx: pchain_types::SignedTx) -> Self {
-        let tx: pchain_types::Transaction = sign_tx.into();
-        Transaction::from(tx)
-    }
-}
-
-impl From<pchain_types::Transaction> for Transaction { 
-    fn from(transaction: pchain_types::Transaction) -> Transaction {
+impl From<pchain_types::blockchain::Transaction> for Transaction { 
+    fn from(transaction: pchain_types::blockchain::Transaction) -> Transaction {
         let mut json_values = vec![];
         for command in transaction.commands {
             let v = match command {
-                pchain_types::Command::Transfer { recipient, amount} => {
+                Command::Transfer (TransferInput{ recipient, amount }) => {
                     let tx_print = TxCommand::Transfer { 
-                        recipient: Base64URL::encode(&recipient).to_string(), 
+                        recipient: base64url::encode(recipient), 
                         amount 
                     };
                     serde_json::to_value(tx_print).unwrap()
                 },
-                pchain_types::Command::Deploy { contract, cbi_version } => {
+                Command::Deploy (DeployInput{contract, cbi_version} ) => {
                     let tx_print = TxCommand::Deploy { 
-                        contract: format!("<contract in {} bytes>", contract.len().to_string()).to_string(), 
+                        contract: format!("<contract in {} bytes>", contract.len()).to_string(), 
                         cbi_version,
                     };
                     serde_json::to_value(tx_print).unwrap()
                 },
-                pchain_types::Command::Call { target, method, arguments, amount }=> {  
+                Command::Call (CallInput{ target, method, arguments, amount })=> {  
                     let tx_print = json!(
                         {
                             "Call": {
-                                "target": Base64URL::encode(target).to_string(),
+                                "target": base64url::encode(target),
                                 "method": method,
                                 "amount": amount,
                                 "arguments":  serde_json::to_string(&arguments).unwrap()
@@ -76,66 +66,66 @@ impl From<pchain_types::Transaction> for Transaction {
                     );
                     serde_json::to_value(tx_print).unwrap()
                 },
-                pchain_types::Command::CreatePool { commission_rate } => {
+                Command::CreatePool (CreatePoolInput{ commission_rate }) => {
                     let tx_print = TxCommand::CreatePool {
                         commission_rate
                     };
                     serde_json::to_value(tx_print).unwrap()
                 },
-                pchain_types::Command::SetPoolSettings { commission_rate } => {
+                Command::SetPoolSettings (SetPoolSettingsInput{ commission_rate }) => {
                     let tx_print = TxCommand::SetPoolSettings {
                         commission_rate
                     };
                     serde_json::to_value(tx_print).unwrap()
                 },
-                pchain_types::Command::DeletePool {} => {
+                Command::DeletePool => {
                     let tx_print = TxCommand::DeletePool {};
                     serde_json::to_value(tx_print).unwrap()
                 },
-                pchain_types::Command::CreateDeposit { operator, balance, auto_stake_rewards } => {
+                Command::CreateDeposit (CreateDepositInput{ operator, balance, auto_stake_rewards }) => {
                     let tx_print = TxCommand::CreateDeposit {
-                        operator: Base64URL::encode(operator).to_string(),
+                        operator: base64url::encode(operator),
                         balance,
                         auto_stake_rewards
                     };
                     serde_json::to_value(tx_print).unwrap()
                 },
-                pchain_types::Command::SetDepositSettings { operator, auto_stake_rewards } => {
+                Command::SetDepositSettings (SetDepositSettingsInput{ operator, auto_stake_rewards }) => {
                     let tx_print = TxCommand::SetDepositSettings {
-                        operator: Base64URL::encode(operator).to_string(),
+                        operator: base64url::encode(operator),
                         auto_stake_rewards
                     };
                     serde_json::to_value(tx_print).unwrap()
                 },
-                pchain_types::Command::TopUpDeposit { operator, amount } => {
+                Command::TopUpDeposit (TopUpDepositInput{ operator, amount }) => {
                     let tx_print = TxCommand::TopUpDeposit {
-                        operator: Base64URL::encode(operator).to_string(),
+                        operator: base64url::encode(operator),
                         amount
                     };
                     serde_json::to_value(tx_print).unwrap()
                 },
-                pchain_types::Command::WithdrawDeposit { operator, max_amount } => {
+                Command::WithdrawDeposit (WithdrawDepositInput{ operator, max_amount }) => {
                     let tx_print = TxCommand::WithdrawDeposit {
-                        operator: Base64URL::encode(operator).to_string(),
+                        operator: base64url::encode(operator),
                         max_amount
                     };
                     serde_json::to_value(tx_print).unwrap()
                 },
-                pchain_types::Command::StakeDeposit { operator, max_amount } => {
+                Command::StakeDeposit (StakeDepositInput{ operator, max_amount }) => {
                     let tx_print = TxCommand::StakeDeposit {
-                        operator: Base64URL::encode(operator).to_string(),
+                        operator: base64url::encode(operator),
                         max_amount
                     };
                     serde_json::to_value(tx_print).unwrap()
                 },
-                pchain_types::Command::UnstakeDeposit { operator, max_amount } => {
+                Command::UnstakeDeposit (UnstakeDepositInput{ operator, max_amount }) => {
                     let tx_print = TxCommand::UnstakeDeposit {
-                        operator: Base64URL::encode(operator).to_string(),
+                        operator: base64url::encode(operator),
                         max_amount
                     };
                     serde_json::to_value(tx_print).unwrap()
                 },
-                pchain_types::Command::NextEpoch { } => {
+                Command::NextEpoch => {
                     let tx_print = TxCommand::NextEpoch {};
                     serde_json::to_value(tx_print).unwrap()
                 },
@@ -145,13 +135,13 @@ impl From<pchain_types::Transaction> for Transaction {
 
         Transaction {
             commands: json_values, 
-            signer: pchain_types::Base64URL::encode(transaction.signer).to_string(),
+            signer: base64url::encode(transaction.signer),
             priority_fee_per_gas: transaction.priority_fee_per_gas,
             gas_limit: transaction.gas_limit,
             max_base_fee_per_gas: transaction.max_base_fee_per_gas,
             nonce: transaction.nonce,
-            hash: pchain_types::Base64URL::encode(transaction.hash).to_string(),
-            signature: pchain_types::Base64URL::encode(transaction.signature).to_string(),
+            hash: base64url::encode(transaction.hash),
+            signature: base64url::encode(transaction.signature),
         }                
     }
 }
@@ -179,10 +169,10 @@ impl SubmitTx {
         };
 
         if !path_parent.exists() {
-            std::fs::create_dir_all(&path_parent).expect(&DisplayMsg::FailToCreateDir(String::from("Parallelchain Client Home"), path.to_path_buf(),  String::new()).to_string());
+            std::fs::create_dir_all(path_parent).expect(&DisplayMsg::FailToCreateDir(String::from("Parallelchain Client Home"), path.to_path_buf(),  String::new()).to_string());
         }
 
-        let file = std::fs::File::create(path.clone()).map_err(|e| DisplayMsg::FailToWriteFile(String::from("transaction"), path.to_path_buf(), e.to_string()))?;
+        let file = std::fs::File::create(path).map_err(|e| DisplayMsg::FailToWriteFile(String::from("transaction"), path.to_path_buf(), e.to_string()))?;
         serde_json::to_writer_pretty(file, &self).map_err(|e| DisplayMsg::FailToWriteFile(String::from("transaction"), path.to_path_buf(), e.to_string()))?;
 
         Ok(dunce::canonicalize(path).unwrap().into_os_string().into_string().ok().unwrap())
@@ -213,7 +203,7 @@ impl SubmitTx {
         Ok(tx_json)
     }
 
-    // `prepare_and_submit_signed_tx` prepapres a SignedTx data structure and submits it to ParallelChain.
+    // `prepare_and_submit_signed_tx` prepapres a pchain_types::blockchain::Transaction data structure and submits it to ParallelChain.
     //  # Arguments
     //  * `commands` - vector of transaction commands 
     //  * `nonce` - committed nonce of the owner account
@@ -226,8 +216,8 @@ impl SubmitTx {
     pub fn prepare_signed_tx(
         self,
         keypair_name: &str, 
-    ) -> Result<SignedTx, DisplayMsg> {
-        let keypair_json_of_given_user = match get_keypair_from_json(get_keypair_path(), &keypair_name){
+    ) -> Result<pchain_types::blockchain::Transaction, DisplayMsg> {
+        let keypair_json_of_given_user = match get_keypair_from_json(get_keypair_path(), keypair_name){
             Ok(Some(s)) => s,
             Ok(None) => {
                 return Err(DisplayMsg::KeypairNotFound(String::from(keypair_name)))
@@ -236,47 +226,38 @@ impl SubmitTx {
                 return Err(e);
             },          
         };
-        let origin = match base64url_to_bytes32(&keypair_json_of_given_user.public_key) {
-            Ok(addr) => addr,
-            Err(e) => {
-                return Err(DisplayMsg::FailToDecodeBase64Address(String::from("origin address"), keypair_json_of_given_user.public_key, e));
-            },
-        };
-        let keypair_raw = match pchain_types::Base64URL::decode(&keypair_json_of_given_user.keypair){
+        let keypair_bs = match base64url::decode(&keypair_json_of_given_user.keypair){
             Ok(kp) => kp,
             Err(e) => {
                 return Err(DisplayMsg::FailToDecodeBase64String(String::from("keypair"), keypair_json_of_given_user.keypair, e.to_string()));
             }
         };
-        
-        let mut commands = vec![];
-        for c in self.commands{
-            match pchain_types::Command::try_from(c){
-                Ok(command) => commands.push(command),
-                Err(e) => return Err(DisplayMsg::InvalidTxCommand(format!("{}", e)))
-            }
-        }
-
-        let transaction = pchain_types::Transaction {
-            commands,
-            signer: origin,
-            nonce: self.nonce,
-            gas_limit: self.gas_limit,
-            priority_fee_per_gas: self.priority_fee_per_gas,
-            max_base_fee_per_gas: self.max_base_fee_per_gas, 
-            hash: [0; 32],
-            signature: [0; 64],
-        };
-
-        let signed_tx = match transaction.to_signed(&keypair_raw) {
-            Ok(tx) => tx,
-            Err(e) => { 
-                println!("{}", DisplayMsg::FailToSignMessage(format!("{:?}", e)));
+        let keypair = match ed25519_dalek::Keypair::from_bytes(&keypair_bs) {
+            Ok(kp) => kp,
+            Err(e) => {
+                println!("{}", DisplayMsg::InvalidEd25519Keypair(e.to_string()));
                 std::process::exit(1);
             }
         };
+        
+        let mut commands = vec![];
+        for c in self.commands{
+            match Command::try_from(c){
+                Ok(command) => commands.push(command),
+                Err(e) => return Err(DisplayMsg::InvalidTxCommand(e))
+            }
+        }
 
-        Ok(signed_tx)
+        let transaction = pchain_types::blockchain::Transaction::new(
+            &keypair,
+            self.nonce,
+            commands,
+            self.gas_limit,
+            self.max_base_fee_per_gas, 
+            self.priority_fee_per_gas,
+        );
+
+        Ok(transaction)
     }
 }
 
@@ -290,7 +271,7 @@ impl SubmitTx {
 //  Err if contract does not exist
 pub fn check_contract_exist(path: &str) -> Result<String, DisplayMsg> {
     if path.ends_with(".wasm") {
-        match dunce::canonicalize(&path) {
+        match dunce::canonicalize(path) {
             Ok(canonicalized_path) => Ok(canonicalized_path.into_os_string().into_string().expect(
                 &DisplayMsg::IncorrectFilePath(String::from("contract"), PathBuf::from(path), String::from("The path contains invalid unicode data")).to_string()
             )),
@@ -310,16 +291,16 @@ pub fn check_contract_exist(path: &str) -> Result<String, DisplayMsg> {
 //  * `path` - absolute path to .wasm file or contract bytecode encoded as a Base64URL encoded string
 //
 pub fn read_contract_code(path: &str) -> Result<Vec<u8>, DisplayMsg> {
-    match check_contract_exist(&path) {
+    match check_contract_exist(path) {
         Ok(canonicalized_path ) => {
             match read_file(std::path::PathBuf::from(&canonicalized_path)){
                 Ok(contract_code) => Ok(contract_code),
                 Err(e) => {
-                    return Err(DisplayMsg::FailToOpenOrReadFile(String::from("contract"), PathBuf::from(path), e))
+                    Err(DisplayMsg::FailToOpenOrReadFile(String::from("contract"), PathBuf::from(path), e))
                 }
             }
         },
-        Err(e) => return Err(e)
+        Err(e) => Err(e)
     }
 }
 
@@ -331,27 +312,27 @@ pub struct TransactionWithReceipt {
     pub receipt: Receipt
 }
 
-impl From<(pchain_types::Transaction, pchain_types::Receipt) > for TransactionWithReceipt {
-    fn from((tx, receipt): (pchain_types::Transaction, pchain_types::Receipt)) -> TransactionWithReceipt {
+impl From<(pchain_types::blockchain::Transaction, pchain_types::blockchain::Receipt) > for TransactionWithReceipt {
+    fn from((tx, receipt): (pchain_types::blockchain::Transaction, pchain_types::blockchain::Receipt)) -> TransactionWithReceipt {
         TransactionWithReceipt{
-            transaction: From::<pchain_types::Transaction>::from(tx),
+            transaction: From::<pchain_types::blockchain::Transaction>::from(tx),
             receipt: receipt.iter().map(|p|{
-                From::<pchain_types::CommandReceipt>::from(p.clone())
+                From::<pchain_types::blockchain::CommandReceipt>::from(p.clone())
             }).collect()
         }
     }
 }
 
-impl From<pchain_types::transaction::Log> for Event {
-    fn from(event: pchain_types::transaction::Log) -> Event {
+impl From<pchain_types::blockchain::Log> for Event {
+    fn from(event: pchain_types::blockchain::Log) -> Event {
         Event {
             topic: match Base64String::from_utf8(event.topic.clone()) {
                 Ok(string_value) => format!("(UTF8) {}", string_value),
-                Err(_) => format!("(Base64 encoded) {}", Base64URL::encode(&event.topic).to_string())
+                Err(_) => format!("(Base64 encoded) {}", base64url::encode(&event.topic))
             },
             value: match Base64String::from_utf8(event.value.clone()) {
                 Ok(string_value) => format!("(UTF8) {}", string_value),
-                Err(_) => format!("(Base64 encoded) {}", Base64URL::encode(&event.value).to_string())
+                Err(_) => format!("(Base64 encoded) {}", base64url::encode(&event.value))
             },
         }
     }

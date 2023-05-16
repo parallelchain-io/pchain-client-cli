@@ -4,9 +4,7 @@
 */
 
 //! Methods related to subcommand `crypto` in `pchain-client`.
-
-use pchain_client_rs::sign;
-
+use ed25519_dalek::Signer;
 use crate::command::Keys;
 use crate::display_msg::DisplayMsg;
 use crate::keypair::{
@@ -27,8 +25,8 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
                 Ok(keypairs) => {
                     let title = "Keypair Name (First 50 char)";
                     let padding_filler = "";
-                    println!("{title} {padding_filler:>len$} {} ", "Public key", len = 50 - title.len());
-                    println!("------------------------- {padding_filler:>len$} {} ", "-------------------------", len = 25);
+                    println!("{title} {padding_filler:>len$} Public key ", len = 50 - title.len());
+                    println!("------------------------- {padding_filler:>len$} ------------------------- ", len = 25);
 
                     for kp in keypairs {
                         let padding_len = 50u32.saturating_sub(kp.name.len() as u32) as usize;
@@ -42,7 +40,7 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
             }           
         },
         Keys::Create { name } => {
-            let name = name.unwrap_or(utils::get_random_string());
+            let name = name.unwrap_or_else(utils::get_random_string);
             let keypair = generate_keypair(&name);
             let public_key = keypair.public_key.clone();
 
@@ -54,7 +52,7 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
                 },
             };
         },
-        Keys::Add { private_key, public_key, name } => {
+        Keys::Import { private_key, public_key, name } => {
             let keypair = match add_keypair(&private_key, &public_key, &name) {
                 Ok(kp) => kp,
                 Err(e) => {
@@ -71,7 +69,23 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
         },
         Keys::Sign { message, name } => {
             let keypair = match get_keypair_from_json(config::get_keypair_path(), &name){
-                Ok(Some(kp)) => kp.keypair,
+                Ok(Some(kp)) => {
+                    let keypair_bs = match base64url::decode(&kp.keypair) {
+                        Ok(kp) => kp,
+                        Err(e) => {
+                            println!("{}", DisplayMsg::FailToDecodeBase64String(String::from("keypair name"), name, e.to_string()));
+                            std::process::exit(1);
+                        }
+                    };
+            
+                    match ed25519_dalek::Keypair::from_bytes(&keypair_bs) {
+                        Ok(kp) => kp,
+                        Err(e) => {
+                            println!("{}", DisplayMsg::InvalidEd25519Keypair(e.to_string()));
+                            std::process::exit(1);
+                        }
+                    }
+                },
                 Ok(None) => {
                     println!("{}", DisplayMsg::KeypairNotFound(name));
                     std::process::exit(1);
@@ -81,16 +95,20 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
                     std::process::exit(1);
                 }  
             };
-            let ciphertext = match sign(&keypair, &message){
-                Ok(signed_text) => signed_text,
+
+            let encoded_ciphertext = match base64url::decode(&message){
+                Ok(serialized_credentials) => {
+                    let ciphertext : ed25519_dalek::Signature = keypair.sign(&serialized_credentials[..]);
+                    base64url::encode(ciphertext)
+                },
                 Err(e) => {
-                    println!("{}", DisplayMsg::FailToSignMessage(e));
+                    println!("{}", DisplayMsg::FailToSignMessage(e.to_string()));
                     std::process::exit(1);
                 },
             };
-
+            
             println!("Message: {}", message);
-            println!("Ciphertext: {}", ciphertext);
+            println!("Ciphertext: {}", encoded_ciphertext);
         },
         Keys::Export {name, destination} => {
             let keypair = match get_keypair_from_json(config::get_keypair_path(), &name){

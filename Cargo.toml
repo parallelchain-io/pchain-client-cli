@@ -1,6 +1,6 @@
 [package]
 name = "pchain-client-cli"
-version = "0.4.1"
+version = "0.4.3"
 authors = ["ParallelChain Lab <info@parallelchain.io>"]
 edition = "2018"
 description = "pchain-client-cli: ParallelChain F Client CLI."
@@ -16,18 +16,22 @@ clap = {version = "3.2.23", features = ["derive"]}
 display_json = "0.2.1"
 dunce = "1.0.2"
 home = "0.5"
-pchain-client-rs = { path = "../rust" }
-pchain-types = { path = "../../types/rust" }
+base64url = "0.1.0"
+pchain-client = { git = "https://github.com/parallelchain-io/pchain-client-rust"}
+pchain-types = "=0.4.3"
+hotstuff_rs = "^0.2"
 regex = "1.5"
 rust-format = "0.3"
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
+serde-big-array = "0.5"
 tokio = {version = "1", features = ["full"]}
 toml = "0.5"
-hotstuff_rs = { git = "https://github.com/parallelchain-io/hotstuff_rs" }
 rust-argon2 = "1.0"
 rpassword = "7.2"
 age = "0.9"
+borsh = "=0.10.2"
+sha2 = "0.10"
 
 # It still uses old version of rand(v0.7). 
 ed25519-dalek = "1.0.1"

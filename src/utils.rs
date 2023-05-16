@@ -11,13 +11,18 @@ use crate::config::get_hash_path;
 //  # Arguments
 //  * 
 pub(crate) fn login() -> Result<String, DisplayMsg>{
-    let password = rpassword::prompt_password("password: ").unwrap().trim().to_string();
-    let encoded_password = pchain_types::Base64URL::encode(password).to_string();
-
     let argon2_config = argon2::Config::default();
-
     let mut salt = read_file(get_hash_path()).map_err(|e| DisplayMsg::FailToOpenOrReadFile(String::from("hash file"), get_hash_path(), e))?;
     let hash = salt.split_off(32);
+
+    // try to decrypt with empty_pasword by default
+    let encoded_empty_pasword = base64url::encode("");
+    if let Ok(true) = argon2::verify_raw(encoded_empty_pasword.as_bytes(), &salt, &hash, &argon2_config){
+        return Ok(encoded_empty_pasword)
+    }
+
+    let password = rpassword::prompt_password("password: ").unwrap().trim().to_string();
+    let encoded_password = base64url::encode(password);
 
     match argon2::verify_raw(encoded_password.as_bytes(), &salt, &hash, &argon2_config){
         Ok(true) => Ok(encoded_password),
@@ -33,13 +38,15 @@ pub(crate) fn login() -> Result<String, DisplayMsg>{
 //  * 
 pub(crate) fn setup_password() -> Result<(), DisplayMsg>{
     println!("First time to use ParallelChain Client CLI. Please setup password to protect you keypairs.");
-    let password1 = rpassword::prompt_password("Your password: ").unwrap().trim().to_string();
-    let password2 = rpassword::prompt_password("Re-enter your password: ").unwrap().trim().to_string();
-    if password1 != password2{
-        return Err(DisplayMsg::PasswordNotMatch)
+    let password1 = rpassword::prompt_password("Your password: (press enter to skip password protection.)").unwrap().trim().to_string();
+    if !password1.is_empty() {
+        let password2 = rpassword::prompt_password("Re-enter your password: ").unwrap().trim().to_string();
+        if password1 != password2{
+            return Err(DisplayMsg::PasswordNotMatch)
+        }
     }
-
-    let encoded_password = pchain_types::Base64URL::encode(password1).to_string();
+    
+    let encoded_password = base64url::encode(password1);
     let mut salt = [0u8; 32];
     OsRng.fill_bytes(&mut salt);
 
@@ -50,7 +57,7 @@ pub(crate) fn setup_password() -> Result<(), DisplayMsg>{
     data.extend_from_slice(&key);
     match write_file(get_hash_path(), &data){
         Ok(_) => {
-            println!("{}", DisplayMsg::SuccessSetupPassword.to_string());
+            println!("{}", DisplayMsg::SuccessSetupPassword);
             Ok(())
         },
         Err(e) => Err(DisplayMsg::FailToWriteFile(String::from("hash file"), get_hash_path(), e))
@@ -103,11 +110,11 @@ pub(crate) fn decrypt(source: &[u8]) -> Result<Vec<u8>, DisplayMsg> {
 // # Arguments
 // * `path_to_json` - absolute path to the JSON file
 pub(crate) fn read_file_to_utf8string(path: PathBuf) -> Result<String, String>{
-    let data = read_file(path.clone())?;
+    let data = read_file(path)?;
     match String::from_utf8(data) {
         Ok(stringified_file) => Ok(stringified_file),
         Err(e) => {
-            return Err(format!("File content is utf8 invalid. {}", e.to_string()));
+            Err(format!("File content is utf8 invalid. {}", e))
         }
     }
 }
@@ -120,11 +127,11 @@ pub(crate) fn read_file(path_to_file: PathBuf) -> Result<Vec<u8>, String> {
         match std::fs::read(&path_to_file) {
             Ok(data) => Ok(data),
             Err(e) => {
-                return Err(e.to_string());
+                Err(e.to_string())
             }
         }
     } else {
-        return Err(String::from("Provided path is not a file"));
+        Err(String::from("Provided path is not a file"))
     }
 }
 

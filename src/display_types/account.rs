@@ -29,10 +29,7 @@ impl From<pchain_types::rpc::Account> for Account {
             }
         };
 
-        let storage_hash = match storage_hash{
-            Some(hash) => Some(pchain_types::Base64URL::encode(hash).to_string()),
-            None => None
-        };
+        let storage_hash = storage_hash.map(base64url::encode);
 
         Account{ nonce, balance, cbi_version, storage_hash }
     }

@@ -10,7 +10,7 @@ pub mod command;
 pub mod sub_commands;
 
 /// display_msg` defines list of displayed messages, which give user insight to the result of their command.
-/// For example, successful execution, reason of failing to execute command, cannot find relevent data.
+/// For example, successful execution, reason of failing to execute command, cannot find relevant data.
 pub mod display_msg;
 
 /// `display_types` defines attributes defined in ParallelChain protocol to human readable format.
@@ -29,6 +29,9 @@ pub mod keypair;
 
 /// `utils` defines methods to read file and generate random string for keypair name.
 pub mod utils;
+
+/// `parser` is a placeholder for parsing pchain_types::CallData for submission of transactions to ParallelChain.
+pub mod parser;
 
 extern crate argon2;
 use clap::Parser;

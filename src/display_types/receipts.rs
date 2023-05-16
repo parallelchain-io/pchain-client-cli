@@ -5,19 +5,16 @@
 
 //! Data structures which convert pchain_types::Receipt to a format which can be displayed on the terminal.
 
-use pchain_types::Base64URL;
 use serde::Serialize;
 
-/// [Event] denotes a display_types equivalent of
-/// pchain_types::Log.
+/// [Event] denotes a display_types equivalent of pchain_types::blockchain::Log.
 #[derive(Serialize, Debug)]
 pub struct Event {
     pub topic: String,
     pub value: String
 }
 
-/// [CommandReceipt] denotes a display_types equivalent 
-/// pchain_types::CommandReceipt.
+/// [CommandReceipt] denotes a display_types equivalent pchain_types::blockchain::CommandReceipt.
 #[derive(Serialize, Debug)]
 pub struct CommandReceipt {
     pub status_code: String,
@@ -26,11 +23,11 @@ pub struct CommandReceipt {
     pub logs: Vec<Event>,
 }
 
-impl From<pchain_types::CommandReceipt> for CommandReceipt {
-    fn from(receipt: pchain_types::transaction::CommandReceipt) -> CommandReceipt {
+impl From<pchain_types::blockchain::CommandReceipt> for CommandReceipt {
+    fn from(receipt: pchain_types::blockchain::CommandReceipt) -> CommandReceipt {
         let events_beautified: Vec<Event> = receipt.logs.into_iter().map(
             |pchain_types_event|{
-                From::<pchain_types::transaction::Log>::from(pchain_types_event)
+                From::<pchain_types::blockchain::Log>::from(pchain_types_event)
         }).collect();
 
         let status_code = format!("{:?}", receipt.exit_status);
@@ -38,7 +35,7 @@ impl From<pchain_types::CommandReceipt> for CommandReceipt {
             status_code,
             gas_used: receipt.gas_used,
             return_values: if !receipt.return_values.is_empty(){
-                format!("(Base64 encoded) {}", Base64URL::encode(&receipt.return_values).to_string())
+                format!("(Base64 encoded) {}", base64url::encode(&receipt.return_values))
             } else { "".to_string() },
             logs: events_beautified,
         }

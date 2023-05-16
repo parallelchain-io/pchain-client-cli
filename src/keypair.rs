@@ -5,7 +5,6 @@
 
 //! Definition of methods related to serde serializable/deserializable version of  `pchain_types::Keypair`.
 
-use pchain_types::{SecretKey, PublicAddress};
 use std::{path::PathBuf, fs::File};
 
 use crate::config::{get_home_dir, get_keypair_path};
@@ -75,7 +74,7 @@ pub fn load_existing_keypairs(path_to_keypair_json: PathBuf) -> Result<Vec<Keypa
     let keypair_base64_string = if path_to_keypair_json.is_file() {
         match utils::read_file(path_to_keypair_json.clone()) {
             Ok(encrypt_bytes) => {
-                if encrypt_bytes.len() == 0{
+                if encrypt_bytes.is_empty(){
                     return Ok(Vec::new())
                 }
                 let json = utils::decrypt(&encrypt_bytes)?;
@@ -89,7 +88,7 @@ pub fn load_existing_keypairs(path_to_keypair_json: PathBuf) -> Result<Vec<Keypa
             }
         }
     } else {
-        return Err(DisplayMsg::IncorrectFilePath(String::from("keypair json"), path_to_keypair_json.to_path_buf(), String::from("Provided path is not a file.")))
+        return Err(DisplayMsg::IncorrectFilePath(String::from("keypair json"), path_to_keypair_json, String::from("Provided path is not a file.")))
     };
 
     Ok(keypair_base64_string)
@@ -100,15 +99,21 @@ pub fn load_existing_keypairs(path_to_keypair_json: PathBuf) -> Result<Vec<Keypa
 //  * `keypair_name` - name of the keypair saved on the JSON file
 //
 pub fn generate_keypair(keypair_name: &str) -> KeypairJSON {
-    let keypair = pchain_types::Keypair::generate();
-    let private_key: SecretKey = keypair.private_key;
-    let public_key: PublicAddress = keypair.public_key;
+    use rand::rngs::OsRng;
+    use rand_chacha::{ChaCha20Rng, rand_core::SeedableRng};
+    
+    let mut osrng = OsRng{};
+    let mut chacha20_rng = ChaCha20Rng::from_rng(&mut osrng).unwrap();
+    let keypair = pchain_types::cryptography::Keypair::generate(&mut chacha20_rng);
+
+    let secret = keypair.secret.as_bytes();
+    let public = keypair.public.as_bytes();
 
     KeypairJSON {
         name: keypair_name.to_string(),
-        private_key: pchain_types::Base64URL::encode(private_key).to_string(),
-        public_key: pchain_types::Base64URL::encode(public_key).to_string(),
-        keypair: pchain_types::Base64URL::encode(&[private_key, public_key].concat()).to_string(),
+        private_key: base64url::encode(secret),
+        public_key: base64url::encode(public),
+        keypair: base64url::encode(keypair.to_bytes()),
     }
 } 
 
@@ -119,13 +124,13 @@ pub fn generate_keypair(keypair_name: &str) -> KeypairJSON {
 //  * `keypair_name` - name of the keypair saved on the JSON file
 //
 pub fn add_keypair(private_key: &str, public_key: &str, name: &str) -> Result<KeypairJSON, DisplayMsg> {
-    let mut sender_public_key = match pchain_types::Base64URL::decode(&public_key) {
+    let mut sender_public_key = match base64url::decode(&public_key) {
         Ok(addr) => addr,
         Err(e) => {
             return Err(DisplayMsg::FailToDecodeBase64String(String::from("public key"), String::from(public_key), e.to_string()));
         },
     };
-    let mut sender_private_key = match pchain_types::Base64URL::decode(&private_key) {
+    let mut sender_private_key = match base64url::decode(&private_key) {
         Ok(addr) => addr,
         Err(e) => {
             return Err(DisplayMsg::FailToDecodeBase64String(String::from("private key"), String::from(public_key), e.to_string()));
@@ -143,7 +148,7 @@ pub fn add_keypair(private_key: &str, public_key: &str, name: &str) -> Result<Ke
     Ok(KeypairJSON{
         public_key: String::from(public_key),
         private_key: String::from(private_key),
-        keypair: pchain_types::Base64URL::encode(keypair.to_bytes()).to_string(),
+        keypair: base64url::encode(keypair.to_bytes()),
         name: name.to_string()
     })
 
@@ -164,14 +169,14 @@ pub fn append_keypair_to_json(path_to_keypair_json: PathBuf, new_keypair: Keypai
     let updated_keypairs = match serde_json::to_vec(&keypairs){
         Ok(data) => data,
         Err(e) => {
-            return Err(DisplayMsg::FailToEncodeJson(String::from("keypair"), path_to_keypair_json.to_path_buf(), e.to_string()))
+            return Err(DisplayMsg::FailToEncodeJson(String::from("keypair"), path_to_keypair_json, e.to_string()))
         }
     };
     let updated_keypairs_bytes = utils::encrypt(&updated_keypairs)?;
 
     match utils::write_file(path_to_keypair_json.clone(), &updated_keypairs_bytes) {
         Ok(_) => Ok(String::from("Success")),
-        Err(e) => return Err(DisplayMsg::FailToWriteFile(String::from("keypair json"), path_to_keypair_json, e.to_string()))           
+        Err(e) => Err(DisplayMsg::FailToWriteFile(String::from("keypair json"), path_to_keypair_json, e))           
     }
 }
 

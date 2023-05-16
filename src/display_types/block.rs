@@ -8,8 +8,7 @@
 use serde::Serialize;
 use crate::display_types::{Transaction, Receipt, QuorumCertificate};
 
-/// [Block] denotes a display_type equivalent of
-/// pchain_types::Block 
+/// [Block] denotes a display_type equivalent of pchain_types::blockchain::Block 
 #[derive(Serialize, Debug)]
 pub struct Block {
     pub header: BlockHeader,
@@ -17,29 +16,27 @@ pub struct Block {
     pub receipts: Vec<Receipt>,
 }
 
-impl From<pchain_types::block::Block> for Block {
-    fn from(block: pchain_types::block::Block) -> Block {
+impl From<pchain_types::blockchain::Block> for Block {
+    fn from(block: pchain_types::blockchain::Block) -> Block {
         let txs_beautified: Vec<Transaction> = block.transactions.into_iter().map(
-            |protocol_type_transaction|
-            From::<pchain_types::transaction::Transaction>::from(protocol_type_transaction)
+            From::<pchain_types::blockchain::Transaction>::from
         ).collect();
         let receipt_beautified: Vec<Receipt> = block.receipts.into_iter().map(
             |protocol_type_receipt|
             protocol_type_receipt.into_iter().map(|p|{
-                From::<pchain_types::transaction::CommandReceipt>::from(p)
+                From::<pchain_types::blockchain::CommandReceipt>::from(p)
             }).collect()
         ).collect();
         
         Block {
-            header: From::<pchain_types::block::BlockHeader>::from(block.header),
+            header: From::<pchain_types::blockchain::BlockHeader>::from(block.header),
             transactions: txs_beautified,
             receipts: receipt_beautified,
         }
     }
 }
 
-/// [BlockHeader] denotes a display_type equivalent for
-/// pchain_types::BlockHeader 
+/// [BlockHeader] denotes a display_type equivalent for pchain_types::blockchain::BlockHeader 
 #[derive(Serialize, Debug)]
 pub struct BlockHeader {
     pub chain_id: u64,
@@ -55,20 +52,20 @@ pub struct BlockHeader {
     pub proposer: String,
 }
 
-impl From<pchain_types::block::BlockHeader> for BlockHeader {
-    fn from(blockheader: pchain_types::block::BlockHeader) -> BlockHeader {
+impl From<pchain_types::blockchain::BlockHeader> for BlockHeader {
+    fn from(blockheader: pchain_types::blockchain::BlockHeader) -> BlockHeader {
         BlockHeader {
             chain_id: blockheader.chain_id,
             height: blockheader.height,
             timestamp: blockheader.timestamp,
             base_fee: blockheader.base_fee,
             justify: From::<hotstuff_rs::types::QuorumCertificate>::from(blockheader.justify),
-            data_hash: pchain_types::Base64URL::encode(blockheader.data_hash).to_string(),
-            block_hash: pchain_types::Base64URL::encode(blockheader.hash).to_string(),
-            txs_hash: pchain_types::Base64URL::encode(blockheader.txs_hash).to_string(),
-            state_hash: pchain_types::Base64URL::encode(blockheader.state_hash).to_string(),
-            receipts_hash: pchain_types::Base64URL::encode(blockheader.receipts_hash).to_string(),
-            proposer: pchain_types::Base64URL::encode(blockheader.proposer).to_string(),
+            data_hash: base64url::encode(blockheader.data_hash),
+            block_hash: base64url::encode(blockheader.hash),
+            txs_hash: base64url::encode(blockheader.txs_hash),
+            state_hash: base64url::encode(blockheader.state_hash),
+            receipts_hash: base64url::encode(blockheader.receipts_hash),
+            proposer: base64url::encode(blockheader.proposer),
         }
     }
 }

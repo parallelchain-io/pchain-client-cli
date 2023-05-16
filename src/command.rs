@@ -22,21 +22,21 @@ pub(crate) enum PChainCLI {
         tx_subcommand: Transaction,
     },
 
-    /// Query blockchain and world state information for ParallelChain network.
+    /// Query blockchain and world state information from ParallelChain network.
     #[clap(display_order=2)]
     Query {
         #[clap(subcommand)]
         query_subcommand: Query,
     },
 
-    /// Locally stores and manage account keypairs you created. (Password required)
+    /// Locally store and manage account keypairs you created. (Password required)
     #[clap(display_order=3)]
     Keys {
         #[clap(subcommand)]
         crypto_subcommand: Keys,
     },
  
-    /// Utilities functions to deserialize return values in CommandReceipt, and compute contract address.
+    /// Utility functions to deserialize return values in CommandReceipt, and compute contract address.
     #[clap(display_order=4)]
     Parse {
         #[clap(subcommand)]
@@ -54,34 +54,34 @@ pub(crate) enum PChainCLI {
 
 #[derive(Debug, Subcommand)]
 pub enum Transaction {
-    /// Create new transaction with command and save to file in json.
+    /// Create new Transaction with command and save to a JSON file.
     #[clap(display_order=1)]
     Create {
-        /// [Optional] Destination path of the output transaction file. If not provided, default save file to current directory with filename `tx.json`. 
+        /// [Optional] Destination path of the output Transaction file. If not provided, default save file to current directory with filename `tx.json`. 
         /// File with same name will be OVERWRITTEN. Directory provided has to exist.
         #[clap(long="destination", display_order=1)]
         destination: Option<String>,
 
-        /// Number of Transactions originating from the Account so far in the Parallelchain network.
+        /// Number of Transactions originating from the Account so far in the ParallelChain network.
         #[clap(long="nonce", display_order=1)]
         nonce: u64,
 
-        /// The maximum number of gas units that should be used in executing this transaction.
+        /// The maximum number of gas units that can be used in executing this transaction.
         #[clap(long="gas-limit", display_order=2)]
         gas_limit: u64,
 
-        /// The maximum number of grays that you are willing to burn for a gas unit used in this transaction.
+        /// The maximum number of Grays that you are willing to burn for the gas unit used in this transaction.
         #[clap(long="max-base-fee-per-gas", display_order=3)]
         max_base_fee_per_gas: u64,
 
-        /// The number of grays that you are willing to pay the block proposer for including this transaction in a block.
+        /// The number of Grays that you are willing to pay the block proposer for including this transaction in a block.
         #[clap(long="priority-fee-per-gas", display_order=4)]
         priority_fee_per_gas: u64,
 
         #[clap(subcommand)]
         create_tx_subcommand: CreateTx,
     },
-    /// Append additional command to existing transaction file
+    /// Append additional command to existing Transaction file
     #[clap(display_order=2)]
     Append {
         /// Relative/absolute path to a JSON file of Transaction.
@@ -98,8 +98,8 @@ pub enum Transaction {
         #[clap(long="file", display_order=1)]
         file: String,
 
-        /// Name of the keypair. You can use exsiting keypair or generate new keypair with your prefered name using `./pchain_client keys create --name <NAME>`.
-        /// This is used to sign the transaction that proves 'you' are authorized to make this transaction.
+        /// Name of the keypair. You can use existing keypair or generate new keypair with your preferred name using `./pchain_client keys create --name <NAME>`.
+        /// This is used to sign the transaction as it proves 'you' are authorized to make this transaction.
         #[clap(long="keypair-name", display_order=6)]
         keypair_name: String,
     },
@@ -115,7 +115,7 @@ pub enum Query {
         address: Base64Address,
     },
 
-    /// Query the number of Transactions originating from an External Account that has been included on Chain (a.k.a., the nonce).
+    /// Query the number of Transactions originating from an External Account that has been included on ParallelChain (a.k.a., the nonce).
     #[clap(arg_required_else_help = true, display_order=2)]
     Nonce {
         /// Address of the External Account you'd like to query.
@@ -123,7 +123,7 @@ pub enum Query {
         address: Base64Address,
     },
 
-    /// Query a Contract account's Contract Byte Code (Base64 encoded). 
+    /// Query a Contract Account's Contract Byte Code (Base64 encoded). 
     #[clap(arg_required_else_help = true, display_order=3)]
     Contract {
         /// Address of the External Account you'd like to query. 
@@ -148,18 +148,18 @@ pub enum Query {
         key: Base64String,
     },
 
-    /// Trigger the Contract method view.
+    /// Trigger the Contract's view method.
     #[clap(arg_required_else_help = true, display_order=5)]
     View {
         /// The address of the target contract
         #[clap(long="target", display_order=1, allow_hyphen_values(true))]
         target: Base64Address,
 
-        /// The method to be invoked
+        /// The name of the method to be invoked
         #[clap(long="method", display_order=2)]
         method: String,
 
-        /// [Optional] Relative / absolute path of the arguments json file supplied to the invoked method.
+        /// [Optional] Relative / absolute path of the JSON file that specifies arguments to be supplied to the invoked method.
         #[clap(long="arguments", display_order=3)]
         arguments: Option<String>,
     },
@@ -185,7 +185,7 @@ pub enum Query {
         latest : bool
     },
 
-    /// Query block information with header only. Search the block either by block height, block hash or tx hash.
+    /// Query block header only. Search the block either by block height, block hash or tx hash.
     /// You are required to specify one of the optional parameter.
     #[clap(arg_required_else_help = true, display_order=7)]
     BlockHeader {
@@ -206,7 +206,7 @@ pub enum Query {
        latest : bool,
     },
 
-    /// Query Transaction information by specify tx hash. Optional paramenter to include receipt in result.
+    /// Query Transaction information by specifying tx hash. Optional parameter to include receipt in result.
     #[clap(arg_required_else_help = true, display_order=8)]
     Tx {
         /// Transaction hash of the Transaction you'd like to query.
@@ -222,38 +222,38 @@ pub enum Query {
         tx_hash : Base64Hash,
     },
 
-    /// Query Information related to Deposit
+    /// Query information related to Deposit
     #[clap(arg_required_else_help = true, display_order=10)]
     Deposit {
-        /// Address of operator account of a stake pool.
+        /// Address of the operator account of a stake pool.
         #[clap(long="operator", display_order=1, allow_hyphen_values(true))]
         operator: Base64Address,
         
-        /// Address of the owner account submitting a stake.
+        /// Address of the owner account that submitted a stake.
         #[clap(long="owner", display_order=2, allow_hyphen_values(true))]
         owner: Base64Address
     },
 
-    /// Query Information related to Pools 
+    /// Query information related to Pools 
     #[clap(arg_required_else_help = true, display_order=11)]
     Pool {
-        /// Address of operator account of a stake pool.
+        /// Address of the operator account of a stake pool.
         #[clap(long="operator", display_order=1)]
         operator: Base64Address,
 
-        /// [Optional] Include stakes in result
+        /// [Optional] Include stakes in result.
         #[clap(long="with-stakes", display_order=2)]
         with_stakes: bool,
     },
 
-    /// Query Stake Information. 
+    /// Query information related to Stakes
     #[clap(arg_required_else_help = true, display_order=12)]
     Stake {
-        /// Address of operator account of a stake pool.
+        /// Address of the operator account of a stake pool.
         #[clap(long="operator", display_order=1, allow_hyphen_values(true))]
         operator: Base64Address,
 
-        /// Address of the owner account submitting a stake.
+        /// Address of the owner account that submitted a stake.
         #[clap(long="owner", display_order=2, allow_hyphen_values(true))]
         owner: Base64Address
     },
@@ -286,17 +286,17 @@ pub enum Keys {
     #[clap(arg_required_else_help = false, display_order=1)]
     List,
 
-    /// Generate and save an ed25519 KeyPair.
+    /// Generate and save an ed25519 Keypair.
     #[clap(display_order=2)]
     Create {
-        /// [Optional] The name to identify the KeyPair that you are generating.
+        /// [Optional] The name to identify the Keypair that you are generating.
         #[clap(long="name", display_order=1)]
         name: Option<String>,
     },
 
-    /// Import your existing keypair.
+    /// Import an existing keypair.
     #[clap(arg_required_else_help = true, display_order=3)]
-    Add {
+    Import {
         /// The private key of your ParallelChain account.
         #[clap(long="private", display_order=1, allow_hyphen_values(true))]
         private_key: Base64Address,
@@ -305,15 +305,15 @@ pub enum Keys {
         #[clap(long="public", display_order=2, allow_hyphen_values(true))]
         public_key: Base64Address,
 
-        /// Name of the KeyPair that was specified in generate-key-pair command.
+        /// The name to identify the Keypair.
         #[clap(long="name", display_order=3, allow_hyphen_values(true))]
         name: String,
     },
 
-    /// Export existing keypair to json file
+    /// Export existing keypair to JSON file
     #[clap(arg_required_else_help = true, display_order=4)]
     Export {
-        /// Name of the KeyPair that was specified in generate-key-pair command.
+        /// The name to identify the Keypair.
         #[clap(long="name", display_order=1)]
         name: String,
 
@@ -330,7 +330,7 @@ pub enum Keys {
         #[clap(long="message", display_order=1, allow_hyphen_values(true))]
         message: String,
 
-        /// Name of the KeyPair that was specified in generate-key-pair command.
+        /// The name to identify the Keypair.
         #[clap(long="name", display_order=2)]
         name: String,
     }
@@ -338,26 +338,26 @@ pub enum Keys {
 
 #[derive(Debug, Subcommand)]
 pub enum Parse {
-    /// Encode / decoded the provided array / string
+    /// Encode / decode the provided array / string
     #[clap(arg_required_else_help = true, display_order=1)]
     Base64Encoding {
-        /// [One Of] Basee64 Encode Mode: encode array to  base64 string
+        /// [One Of] Base64 Encode Mode: encode array to Base64 string
         #[clap(long="encode", display_order=1)]
         encode: bool,
 
-        /// [One Of] Basee64 Decode Mode: decode base64 string to array
+        /// [One Of] Base64 Decode Mode: decode Base64 string to array
         #[clap(long="decode", display_order=2)]
         decode: bool,
         
-        /// The Base64 string you want to decode. / The byte array you want to encode. Please wrap value with parentheses like "[8,8,8]" or "AAAA"
+        /// The Base64 string to decode. / The byte array to encode. Please wrap value with quotation marks like "[8,8,8]" or "AAAA"
         #[clap(long="value", display_order=3)]
         value: String,
     },
     
-    /// Parse the return value of a Contract call and display them in human-readable form. 
+    /// Parse the return value from a Contract call and display them in human-readable form. 
     #[clap(arg_required_else_help = true, display_order=2)]
     CallResult {
-        /// The returned base64 string from result of contract call.
+        /// The returned Base64 string from result of contract call.
         #[clap(long="value", display_order=1)]
         value: String,
 
@@ -365,7 +365,7 @@ pub enum Parse {
         /// Vec<i8>, Vec<i16>, Vec<i32>, Vec<i64>, Vec<i128>, Vec<u8>, Vec<u16>, Vec<u32>, Vec<u64>, Vec<u128>, 
         /// Vec<bool>, Vec<String>.
         /// Example values in Vec or slice: [0,1,2].
-        /// When decoding [u8;32] or [u8;64], one should wrap the type with parentheses like "[u8;32]"
+        /// When decoding [u8;32] or [u8;64], one should wrap the type with quotation marks like "[u8;32]"
         #[clap(long="data-type", display_order=2)]
         data_type: String,
     },
@@ -373,7 +373,7 @@ pub enum Parse {
     /// Compute the contract address of a Contract in transaction.
     #[clap(arg_required_else_help = true, display_order=3)]
     ContractAddress {
-        /// Address of the signer account
+        /// Address of the signer account.
         #[clap(long="address", display_order=1, allow_hyphen_values(true))]
         address: Base64Address,
         
@@ -423,7 +423,7 @@ pub enum CreateTx {
         #[clap(long="recipient", display_order=1, allow_hyphen_values(true))]
         recipient: Base64Address,
 
-        /// Amount of XPLL(in Grays) transfer to the specified target address.
+        /// The amount of XPLL (in Grays) transferring to the specified target address.
         #[clap(long="amount", display_order=2)]
         amount: u64,
     },
@@ -431,7 +431,7 @@ pub enum CreateTx {
     /// Deploy smart contract to the state of the blockchain.
     #[clap(arg_required_else_help = true, display_order=2)]
     Deploy {
-        /// Relative / absolute path of Smart contract in format of WASM bytecode ('.wasm').
+        /// Relative / absolute path of smart contract in format of WASM bytecode ('.wasm').
         #[clap(long="contract-code", display_order=1)]
         contract_code: String,
 
@@ -443,38 +443,38 @@ pub enum CreateTx {
     /// Trigger method call of a deployed smart contract.
     #[clap(arg_required_else_help = true, display_order=3)]
     Call {
-        /// The address of the target contract
+        /// The address of the target contract.
         #[clap(long="target", display_order=1, allow_hyphen_values(true))]
         target: Base64Address,
 
-        /// The method to be invoked
+        /// The name of the method to be invoked.
         #[clap(long="method", display_order=2)]
         method: String,
 
-        /// [Optional] Relative / absolute path of the arguments json file supplied to the invoked method.
+        /// [Optional] Relative / absolute path of the JSON file that specifies arguments to be supplied to the invoked method.
         #[clap(long="arguments", display_order=3)]
         arguments: Option<String>,
 
-        /// [Optional] The XPLL(in Grays) amount sent to the target contract.
+        /// [Optional] The amount of XPLL (in Grays) sending to the target contract.
         #[clap(long="amount", display_order=4)]
         amount: Option<u64>,
     },
 
-    /// Deposit some balance into the network account.
+    /// Deposit balance into a network account.
     #[clap(display_order=4)]
     Deposit {
         #[clap(subcommand)]
         deposit_tx_subcommand: DepositTx,
     },
 
-    /// Stake to particular pool.
+    /// Stake to a particular Pool.
     #[clap(display_order=5)]
     Stake {
         #[clap(subcommand)]
         stake_tx_subcommand: StakeTx,
     },
 
-    /// Create amd manage Pool
+    /// Create and manage Pool
     #[clap(display_order=6)]
     Pool {
         #[clap(subcommand)]
@@ -487,7 +487,7 @@ pub enum PoolTx {
     /// Instantiation of a Pool in the network account.
     #[clap(arg_required_else_help = true, display_order=1)]
     Create {
-        /// The percentage (0-100%) of the epoch’s issuance rewarded to the pool that will go towards the operator’s stake
+        /// The percentage (0-100%) of the epoch’s issuance rewarded to the pool that will go towards the operator’s stake.
         #[clap(long="commission-rate", display_order=1)]
         commission_rate: u8,
     },
@@ -495,7 +495,7 @@ pub enum PoolTx {
     /// Update settings of an existing Pool.
     #[clap(arg_required_else_help = true, display_order=2)]
     UpdateSettings {
-        /// The percentage (0-100%) of the epoch’s issuance rewarded to the pool that will go towards the operator’s stake
+        /// The percentage (0-100%) of the epoch’s issuance rewarded to the pool that will go towards the operator’s stake.
         #[clap(long="commission-rate", display_order=1)]
         commission_rate: u8,
     },
@@ -507,14 +507,14 @@ pub enum PoolTx {
 
 #[derive(Debug, Subcommand)]
 pub enum DepositTx {
-    /// Instantiation of a Deposit of existing Pool.
+    /// Instantiation of a Deposit in an existing Pool.
     #[clap(arg_required_else_help = true, display_order=1)]
     Create {
         /// The address of operator of the target pool.
         #[clap(long="operator", display_order=1, allow_hyphen_values(true))]
         operator: Base64Address,
 
-        /// The deposit amount
+        /// The deposit amount in Grays
         #[clap(long="balance", display_order=2)]
         balance: u64,
 
@@ -530,7 +530,7 @@ pub enum DepositTx {
         #[clap(long="operator", display_order=1, allow_hyphen_values(true))]
         operator: Base64Address,
 
-        /// The amount added to Deposit's Balance.
+        /// The amount (in Grays) added to Deposit's Balance.
         #[clap(long="amount", display_order=2)]
         amount: u64,
     },
@@ -542,7 +542,7 @@ pub enum DepositTx {
         #[clap(long="operator", display_order=1, allow_hyphen_values(true))]
         operator: Base64Address,
 
-        /// The amount of deposits that the stake owner wants to withdraw. The prefix 'max'
+        /// The amount of deposits (in Grays) that the stake owner wants to withdraw. The prefix 'max'
         /// is denoted here because the actual withdrawal amount can be less than 
         /// the wanted amount.
         #[clap(long="max-amount", display_order=2, allow_hyphen_values(true))]
@@ -564,14 +564,14 @@ pub enum DepositTx {
 
 #[derive(Debug, Subcommand)]
 pub enum StakeTx {
-    /// Increase stakes to an existing Pool.
+    /// Increase stakes in an existing Pool.
     #[clap(arg_required_else_help = true, display_order=8)]
     Stake {
         /// The address of operator of the target pool.
         #[clap(long="operator", display_order=1, allow_hyphen_values(true))]
         operator: Base64Address,
 
-        /// The amount of stakes that the stake owner wants to stake to the target pool. 
+        /// The amount of stakes (in Grays) that the stake owner wants to stake to the target pool. 
         /// The prefix 'max' is denoted here because the actual amount to be staked
         /// can be less than the wanted amount.
         #[clap(long="max-amount", display_order=2, allow_hyphen_values(true))]
@@ -585,7 +585,7 @@ pub enum StakeTx {
         #[clap(long="operator", display_order=1, allow_hyphen_values(true))]
         operator: Base64Address,
 
-        /// The amount of stakes that the stake owner wants to remove from the target pool. 
+        /// The amount of stakes (in Grays) that the stake owner wants to remove from the target pool. 
         /// The prefix 'max' is denoted here because the actual amount to be removed
         /// can be less than the wanted amount.
         #[clap(long="max-amount", display_order=2, allow_hyphen_values(true))]

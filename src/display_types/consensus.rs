@@ -4,13 +4,10 @@
 */
 
 //! Data structures which convert data types from hotstuff crate to a format which can be displayed on the terminal.
-
-use pchain_types::Base64URL;
 use serde::Serialize;
 use crate::command::Base64String;
 
-/// [QuorumCertificate] denotes a display_types equivalent 
-/// of hotstuff_rs_types::QuorumCertificate.
+/// [QuorumCertificate] denotes a display_types equivalent of hotstuff_rs_types::QuorumCertificate.
 #[derive(Serialize, Debug)]
 pub struct QuorumCertificate {
     pub chain_id: u64,
@@ -25,7 +22,7 @@ impl From<hotstuff_rs::types::QuorumCertificate> for QuorumCertificate {
         Self {
             chain_id: qc.chain_id,
             view: qc.view,
-            block: pchain_types::Base64URL::encode(qc.block).to_string(),
+            block: base64url::encode(qc.block),
             phase: From::<hotstuff_rs::types::Phase>::from(qc.phase),
             signatures: From::<hotstuff_rs::types::SignatureSet>::from(qc.signatures),
         }
@@ -56,8 +53,7 @@ impl From<hotstuff_rs::types::Phase> for Phase {
     }
 }
 
-/// [SignatureSet] denotes a display_types equivalent 
-/// hotstuff_rs_types::SignatureSet.
+/// [SignatureSet] denotes a display_types equivalent hotstuff_rs_types::SignatureSet.
 #[derive(Serialize, Debug)]
 pub struct SignatureSet {
     pub signatures: Vec<Option<Base64String>>,
@@ -66,10 +62,7 @@ pub struct SignatureSet {
 impl From<hotstuff_rs::types::SignatureSet> for SignatureSet {
     fn from(sig: hotstuff_rs::types::SignatureSet) -> Self {
         let signatures: Vec<Option<Base64String>> = sig.iter().map(|s|{
-            match s {
-                Some(sig) => Some(Base64URL::encode(sig).to_string()),
-                None => None
-            }
+            s.map(base64url::encode)
         }).collect();
         Self {
             signatures,

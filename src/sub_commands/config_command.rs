@@ -5,7 +5,7 @@
 
 //! Methods related to subcommand `setup` in `pchain-client`.
 
-use pchain_client_rs::Client;
+use pchain_client::Client;
 use config::Config;
 
 use crate::display_msg::DisplayMsg;

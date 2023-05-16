@@ -8,25 +8,23 @@
 use serde::Serialize;
 use crate::command::Base64String;
 
-/// [Stake] denotes a display_types equivalent of
-/// pchain_types::Stake.
+/// [Stake] denotes a display_types equivalent of pchain_types::rpc::Stake.
 #[derive(Serialize, Debug)]
 pub struct Stake {
     pub owner: Base64String,
     pub power: u64
 }
 
-impl From<pchain_types::Stake> for Stake {
-    fn from(stake: pchain_types::Stake) -> Stake {
+impl From<pchain_types::rpc::Stake> for Stake {
+    fn from(stake: pchain_types::rpc::Stake) -> Stake {
         Stake {
-            owner: pchain_types::Base64URL::encode(&stake.owner).to_string(),
+            owner: base64url::encode(stake.owner),
             power: stake.power
         }
     }
 }
 
-/// [Deposit] denotes a display_types equivalent of
-/// pchain_types::Deposit.
+/// [Deposit] denotes a display_types equivalent of pchain_types::rpc::Deposit.
 #[derive(Serialize, Debug)]
 pub struct Deposit {
     pub balance: u64,
@@ -42,8 +40,7 @@ impl From<pchain_types::rpc::Deposit> for Deposit {
     }
 }
 
-/// [Pool] denotes a display_types equivalent of
-/// pchain_types::Pool.
+/// [Pool] denotes a display_types equivalent of pchain_types::rpc::Pool.
 #[derive(Serialize, Debug)]
 pub enum Pool {
     WithStakes(PoolWithDelegators),
@@ -60,8 +57,7 @@ impl From<pchain_types::rpc::Pool> for Pool {
 }
 
 
-/// [PoolWithoutDelegatedStakes] denotes a display_types equivalent of
-/// pchain_types::PoolWithoutDelegatedStakes.
+/// [PoolWithoutDelegatedStakes] denotes a display_types equivalent of pchain_types::rpc::PoolWithoutDelegatedStakes.
 #[derive(Serialize, Debug)]
 pub struct PoolWithoutDelegators {
     pub operator: Base64String,
@@ -73,14 +69,14 @@ pub struct PoolWithoutDelegators {
 impl From<pchain_types::rpc::PoolWithoutDelegators> for PoolWithoutDelegators {
     fn from(pool: pchain_types::rpc::PoolWithoutDelegators) -> PoolWithoutDelegators {
         let operator_stake = if pool.operator_stake.is_some() {
-            let pool: Stake  = From::<pchain_types::Stake>::from(pool.operator_stake.unwrap());
+            let pool: Stake  = From::<pchain_types::rpc::Stake>::from(pool.operator_stake.unwrap());
             Some(pool)
         } else {
             None
         };
 
         PoolWithoutDelegators {
-            operator: pchain_types::Base64URL::encode(&pool.operator).to_string(),
+            operator: base64url::encode(pool.operator),
             commission_rate: pool.commission_rate,
             power: pool.power,
             operator_stake
@@ -88,8 +84,7 @@ impl From<pchain_types::rpc::PoolWithoutDelegators> for PoolWithoutDelegators {
     }
 }
 
-/// [PoolWithDelegators] denotes a display_types equivalent of
-/// pchain_types::Pool.
+/// [PoolWithDelegators] denotes a display_types equivalent of pchain_types::rpc::Pool.
 #[derive(Serialize, Debug)]
 pub struct PoolWithDelegators {
     pub operator: Base64String,
@@ -102,16 +97,16 @@ pub struct PoolWithDelegators {
 impl From<pchain_types::rpc::PoolWithDelegators> for PoolWithDelegators {
     fn from(pool: pchain_types::rpc::PoolWithDelegators) -> PoolWithDelegators {
         let operator_stake = if pool.operator_stake.is_some() {
-            let pool: Stake  = From::<pchain_types::Stake>::from(pool.operator_stake.unwrap());
+            let pool: Stake  = From::<pchain_types::rpc::Stake>::from(pool.operator_stake.unwrap());
             Some(pool)
         } else {
             None
         };
 
-        let delegated_stakes: Vec<Stake> = pool.delegated_stakes.into_iter().map(|stake| From::<pchain_types::Stake>::from(stake)).collect();
+        let delegated_stakes: Vec<Stake> = pool.delegated_stakes.into_iter().map(From::<pchain_types::rpc::Stake>::from).collect();
 
         PoolWithDelegators {
-            operator: pchain_types::Base64URL::encode(&pool.operator).to_string(),
+            operator: base64url::encode(pool.operator),
             commission_rate: pool.commission_rate,
             power: pool.power,
             operator_stake,
@@ -140,10 +135,10 @@ impl From<pchain_types::rpc::ValidatorSet> for ValidatorSet {
     fn from(vs: pchain_types::rpc::ValidatorSet) -> ValidatorSet {
         match vs {
             pchain_types::rpc::ValidatorSet::WithDelegators(pool_vec) => {
-                ValidatorSet::WithDelegators(pool_vec.into_iter().map(|pool| From::<pchain_types::rpc::PoolWithDelegators>::from(pool)).collect())
+                ValidatorSet::WithDelegators(pool_vec.into_iter().map(From::<pchain_types::rpc::PoolWithDelegators>::from).collect())
             },
             pchain_types::rpc::ValidatorSet::WithoutDelegators(pool_vec) => {
-                ValidatorSet::WithoutDelegators(pool_vec.into_iter().map(|pool| From::<pchain_types::rpc::PoolWithoutDelegators>::from(pool)).collect())
+                ValidatorSet::WithoutDelegators(pool_vec.into_iter().map(From::<pchain_types::rpc::PoolWithoutDelegators>::from).collect())
             },
         }
     }

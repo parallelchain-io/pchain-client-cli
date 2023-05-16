@@ -42,7 +42,7 @@ If you are lost at any step, you can always type `pchain_client --help`.
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-## Table of Contents
+## Common use cases
 - [Install and Setup](#install-and-setup)
   - [Installation](#installation)
   - [Running pchain_client](#running-pchain_client)
@@ -79,7 +79,7 @@ Here are the simple steps to install pchain client.
 If this is your first time using `pchain_client`, you need to setup `$PCHAIN_CLI_HOME` in environment variables to specify the home path. See more [here](https://chlee.co/how-to-setup-environment-variables-for-windows-mac-and-linux/).
 
 ### Running pchain_client
-First time using `pchain_client` will be required to setup password to protect your account keypairs. Please note that this password is different from the password used in Parallelchain explorer.
+First time using `pchain_client` will be asked to setup password to protect your account keypairs. This password can be different from the password you used in Parallelchain explorer. Your can also press enter to skip the password protection.
 
 Command:
 ```sh
@@ -100,7 +100,7 @@ pchain_client config setup --url <URL>
 This would check the status of your chosen provider. If pchain client cannot connect to your provider, a warning message will be shown and setup is failed. You need to setup another url with the above command again.
 
 ## Manage Account
-In parallelchain, account is identified by the public key of Ed25519 keypair. You can either generate new keys or import your exsiting Ed25519 keypair to making transaction in pchain_client. Both operations are password required.
+In parallelchain, account is identified by the public key of Ed25519 keypair. You can either generate new keys or import your exsiting Ed25519 keypair to making transaction in pchain_client. Both operations are password required (if you setup before).
 
 ### Generate new keypair
 This command generates a set of ed25519_dalek compatible keys. Random name will be set if you do not provide a name.
@@ -122,14 +122,14 @@ pchain_client keys list
 ```
 
 ## Transaction 
-A transaction is a digitally signed instruction that tells the Parallelchain state machine to execute a sequence of commands. There are different kinds of [Commands](/protocol/Runtime.md) in ParallelChain protocol. 
+A transaction is a digitally signed instruction that tells the Parallelchain state machine to execute a sequence of commands. There are different kinds of [Commands](https://docs.rs/pchain-types/0.4.3/pchain_types/blockchain/enum.Command.html) in ParallelChain protocol. 
 
 `pchain_client` accepts transaction in json format. This section will demonstrate how to prepare your transaction file and submit with your account keys.
 ### Prepare Transaction File
 `pchain_client` provides user-friendly way to prepare your transaction file without prior knowledge of JSON (JavaScript Object Notation) format.
 The transaction file with 2 parts: `Parameters` and `Subcommand`.
 
-Here are some CLI subcommands to indicate corresponding [Protocal Transaction Command](/protocol/Runtime.md). 
+Here are some CLI subcommands to indicate corresponding [Protocal Transaction Command](https://docs.rs/pchain-types/0.4.3/pchain_types/blockchain/enum.Command.html). 
 
 | Subcommand | Action          | Description                                           |
 |------------|-----------------|-------------------------------------------------------|
@@ -165,7 +165,7 @@ pchain_client transaction create \
   --priority-fee-per-gas <PRIORITY_FEE_PER_GAS> \
 ...
 ```
-Then, decide the transaction type using the [subcommand](#prepare-transaction-file). Each of them takes different inputs. You can always check help menu with `--help`.
+Then, decide the transaction type using the [CLI subcommand](#prepare-transaction-file). Each of them takes different inputs. You can always check help menu with `--help`.
 
 Make sure you provide both `Parameters` and `Subcommand` parts in one command. The output transaction file (tx.json) will be saved in current directory. You can also specify the designated file with flag `--destination`
 
@@ -325,7 +325,21 @@ Here are some acceptable types and values.
 | `u16`       | The 16-bit unsigned integer type.             | "65535"                              |
 | `u32`       | The 32-bit unsigned integer type.             | "4294967295"                         |
 | `u64`       | The 64-bit unsigned integer type.             | "18446744073709551615"               |
-| `String`    | String                                        | "This is test string"                |
+| `String`    | String                                        | "\"This is test string\""            |
 | `bool`      | Boolean                                       | "true" or "false"                    |
 | `Vec<TYPE>` | Array with specific type and arbitrary length | "[65535,6535]" , "[true,false,true]" |
 | `[5]`       | Array with specific length                    | "[1,2,3,4,5]"                        |
+
+
+## Versioning
+
+The version of this library reflects the version of the ParallelChain Protocol which it implements. For example, the current version is 0.4.3, and this implements protocol version 0.4. Patch version increases are not guaranteed to be non-breaking.
+
+## Opening an issue
+
+Open an issue in GitHub if you:
+1. Have a feature request / feature idea,
+2. Have any questions (particularly software related questions),
+3. Think you may have discovered a bug.
+
+Please try to label your issues appropriately.
