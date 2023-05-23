@@ -423,7 +423,7 @@ pub enum CreateTx {
         #[clap(long="recipient", display_order=1, allow_hyphen_values(true))]
         recipient: Base64Address,
 
-        /// The amount of XPLL (in Grays) transferring to the specified target address.
+        /// The amount of XPLL/TXPLL (in Grays) transferring to the specified target address.
         #[clap(long="amount", display_order=2)]
         amount: u64,
     },
@@ -455,7 +455,7 @@ pub enum CreateTx {
         #[clap(long="arguments", display_order=3)]
         arguments: Option<String>,
 
-        /// [Optional] The amount of XPLL (in Grays) sending to the target contract.
+        /// [Optional] The amount of XPLL/TXPLL (in Grays) sending to the target contract.
         #[clap(long="amount", display_order=4)]
         amount: Option<u64>,
     },

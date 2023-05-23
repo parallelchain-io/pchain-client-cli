@@ -5,7 +5,7 @@ For a detailed description of all available commands, execute `pchain_client --h
 
 ## Usgae 
 ```sh
-ParallelChain Client CLI 0.4.1
+ParallelChain Client CLI 0.4.3
 <ParallelChain Lab>
 ParallelChain client (`pchain_client`) is a command-line tool for you to connect and interact with
 the ParallelChain Mainnet/Testnet.
@@ -71,7 +71,7 @@ If you are lost at any step, you can always type `pchain_client --help`.
 `pchain_client` is available for Unix/Linux, MacOS and Windows. You need to download only pre-built binary applicable for your platform and install pchain client.
 
 Here are the simple steps to install pchain client.
-  - Open a Web browser and go to [https://XXXXXX/downloads/]() (TBC).
+  - Open a Web browser and go to [release page](https://github.com/parallelchain-io/pchain-client-cli/releases).
   - Follow the link to download pre-built binary available for your platform.
   - Run the downloaded file.
 
@@ -111,9 +111,9 @@ pchain_client keys create --name <NAME>
 ### Import exsiting keypair
 If you already get keys from Parallelchain explorer, you can import your account keypair with this command. Random name will be set if you do not provide a name.
 ```sh
-pchain_client keys add --private <PRIVATE_KEY> --public <PUBLIC_KEY> --name <NAME>
+pchain_client keys import --private <PRIVATE_KEY> --public <PUBLIC_KEY> --name <NAME>
 
-// PRIVATE_KEY and PUBLIC_KEY are Base64encoded Ed25519 keys.
+// PRIVATE_KEY and PUBLIC_KEY are Base64url encoded Ed25519 keys.
 ```
 ### List Accounts
 After create or add keypair, you can check it using following command to list out all public keys managed in this tool.
@@ -288,18 +288,17 @@ pchain_client query stake --operator <OPERATOR> --owner <OWNER>
 Smart contracts are computer programs that are stored on a blockchain. You need to provide some necessary information such as contract address, method name, and arguments in order to invoke method of the contract.
 
 ### Retrieve Contract Address
-After you deploy contract in trasnaction, you should receive the contract address together with transaction hash. What if you want to deploy contract and call method in the SAME transaction, it is possible to compute the contract address in advance.
+After you deploy contract in transaction, you should receive the contract address together with transaction hash. What if you want to deploy contract and call method in the SAME transaction, it is possible to compute the contract address in advance.
 
 You need to provide the account address and nonce when deploying contract.
 
-Without proof:
 Command:
 ```sh
 pchain_client parse contract-address --address <ADDRESS> --nonce <NONCE>
 ```
 
 ### Prepare Contract method arguments file
-When you make a contract call that modify or view state, the contract method may expects arguments. You need to provide arguments by JSON file(.json) in `transaction create call` or `query view` commands.
+When you make a contract call that modify or view state, the contract method may expects arguments. You need to provide arguments by JSON file(.json) with `transaction create call` or `query view` commands.
 
 Example:
 For a contract method accept 3 arguments (String, Vec<i16> , boolean)
