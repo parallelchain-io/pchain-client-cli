@@ -29,7 +29,7 @@ SUBCOMMANDS:
 
 ## Why pchain_client
 `pchain_client` allows you to query data from the ParallelChain, submit transaction, and more, all at the comfort of your command line.\
-Checkout the examples below for more information or check the full list of commands. The following document walks through the CLI's essential workflows. 
+Check out the examples below for more information or see the full list of commands. The following document walks through the CLI's essential workflows. 
 
 New users can begin either by 
 1. [Install and Setup](#install-and-setup) or,
@@ -55,7 +55,7 @@ If you are lost at any step, you can always type `pchain_client --help`.
   - [Prepare Transaction File](#prepare-transaction-file)
     - [Create new Transaction File](#create-new-transaction-file)
     - [Append Command to existing file](#append-command-to-existing-file)
-  - [Submit Transaction to Parallelchain](#submit-transaction-to-parallelchain)
+  - [Submit Transaction to ParallelChain](#submit-transaction-to-parallelchain)
 - [Query](#query)
   - [Check Account related information](#check-account-related-information)
   - [Get Transaction with receipt](#get-transaction-with-receipt)
@@ -68,7 +68,7 @@ If you are lost at any step, you can always type `pchain_client --help`.
 
 ## Install and Setup
 ### Installation
-`pchain_client` is available for Unix/Linux, MacOS and Windows. You need to download only pre-built binary applicable for your platform and install pchain client.
+`pchain_client` is an available tool for users on Unix/Linux, MacOS, and Windows operating systems. Simply download the pre-built binary that corresponds with your platform and install the pchain client.
 
 Here are the simple steps to install pchain client.
   - Open a Web browser and go to [release page](https://github.com/parallelchain-io/pchain-client-cli/releases).
@@ -79,7 +79,7 @@ Here are the simple steps to install pchain client.
 If this is your first time using `pchain_client`, you need to setup `$PCHAIN_CLI_HOME` in environment variables to specify the home path. See more [here](https://chlee.co/how-to-setup-environment-variables-for-windows-mac-and-linux/).
 
 ### Running pchain_client
-First time using `pchain_client` will be asked to setup password to protect your account keypairs. This password can be different from the password you used in Parallelchain explorer. Your can also press enter to skip the password protection.
+Upon first use of `pchain_client`, you will be prompted to set up a password to protect your account keypairs. Please note that this password can be different from the password you used in ParallelChain explorer. Alternatively, you can skip the password protection by simply pressing enter.
 
 Command:
 ```sh
@@ -91,7 +91,7 @@ You will require to enter your password twice. If your password is set successfu
 The password is not sent and saved in anywhere. You won't be able to recover the password if you lost it. Please keep your password safe. You will require to provide this password to submit transaction and manage keypairs later.
 
 ## Prepare Environment
-Before you can submit transaction or query information on Parallelchain, you need to setup your own choice of ParallelChain RPC API provider URL.
+Before you can submit transaction or query information on ParallelChain, you need to setup your own choice of ParallelChain RPC API provider URL.
 
 Command:
 ```sh
@@ -100,7 +100,7 @@ pchain_client config setup --url <URL>
 This would check the status of your chosen provider. If pchain client cannot connect to your provider, a warning message will be shown and setup is failed. You need to setup another url with the above command again.
 
 ## Manage Account
-In parallelchain, account is identified by the public key of Ed25519 keypair. You can either generate new keys or import your exsiting Ed25519 keypair to making transaction in pchain_client. Both operations are password required (if you setup before).
+In ParallelChain, account is identified by the public key of Ed25519 keypair. You can either generate new keys or import your exsiting Ed25519 keypair to making transaction in pchain_client. Both operations are password required (if you setup before).
 
 ### Generate new keypair
 This command generates a set of ed25519_dalek compatible keys. Random name will be set if you do not provide a name.
@@ -109,7 +109,7 @@ pchain_client keys create --name <NAME>
 ```
 
 ### Import exsiting keypair
-If you already get keys from Parallelchain explorer, you can import your account keypair with this command. Random name will be set if you do not provide a name.
+If you already get keys from ParallelChain explorer, you can import your account keypair with this command. Random name will be set if you do not provide a name.
 ```sh
 pchain_client keys import --private <PRIVATE_KEY> --public <PUBLIC_KEY> --name <NAME>
 
@@ -122,7 +122,7 @@ pchain_client keys list
 ```
 
 ## Transaction 
-A transaction is a digitally signed instruction that tells the Parallelchain state machine to execute a sequence of commands. There are different kinds of [Commands](https://docs.rs/pchain-types/0.4.3/pchain_types/blockchain/enum.Command.html) in ParallelChain protocol. 
+A transaction is a digitally signed instruction that tells the ParallelChain state machine to execute a sequence of commands. There are different kinds of [Commands](https://docs.rs/pchain-types/0.4.3/pchain_types/blockchain/enum.Command.html) in ParallelChain protocol. 
 
 `pchain_client` accepts transaction in json format. This section will demonstrate how to prepare your transaction file and submit with your account keys.
 ### Prepare Transaction File
@@ -208,7 +208,7 @@ pchain_client transaction append \
     --amount 100
 ```
 
-### Submit Transaction to Parallelchain
+### Submit Transaction to ParallelChain
 After prepared the transaction json file, you can now submit the transaction with keypair.
 
 Command:
@@ -237,7 +237,7 @@ You will get following response if the transaction is accepted by your provider:
 
 
 ## Query
-`pchain_client` allows you to query different data from the ParallelChain, not just Transaction or Account related information, but also Validators and Stake Pool details in Parallelchain network. 
+`pchain_client` allows you to query different data from the ParallelChain, not just Transaction or Account related information, but also Validators and Stake Pool details in ParallelChain network. 
 
 Use `pchain_client query --help` to check the full list avaliable to query.
 
@@ -260,7 +260,7 @@ pchain_client query contract \
 ```
 
 ### Get Transaction with receipt
-In [Submit Transaction to Parallelchain](#submit-transaction-to-parallelchain) section, after you successfully make transaction on Parallekchain, you should receive the transaction hash (tx_hash) in response. This hash is the identity of your transaction. You can always retreive the transaction details with/without receipt by the transaction hash.
+In [Submit Transaction to ParallelChain](#submit-transaction-to-parallelchain) section, after you successfully make transaction on ParallelChain, you should receive the transaction hash (tx_hash) in response. This hash is the identity of your transaction. You can always retreive the transaction details with/without receipt by the transaction hash.
 
 Command:
 ```sh
