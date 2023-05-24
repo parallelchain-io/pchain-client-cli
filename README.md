@@ -3,7 +3,7 @@
 `pchain_client` is an easy-to-use, fully-featured CLI for interacting with ParallelChain. 
 For a detailed description of all available commands, execute `pchain_client --help`. 
 
-## Usgae 
+## Usage 
 ```sh
 ParallelChain Client CLI 0.4.3
 <ParallelChain Lab>
@@ -28,13 +28,13 @@ SUBCOMMANDS:
 ```
 
 ## Why pchain_client
-`pchain_client` allows you to query data from the ParallelChain, submit transaction, and more, all at the comfort of your command line.\
+`pchain_client` allows you to query data from the ParallelChain, submit transactions, and more, all at the comfort of your command line.\
 Check out the examples below for more information or see the full list of commands. The following document walks through the CLI's essential workflows. 
 
 New users can begin either by 
 1. [Install and Setup](#install-and-setup) or,
 2. [Prepare Environment](#prepare-environment) or,
-3. [Setting up new account](#generate-new-keypair)
+3. [Setting up New Account](#generate-new-keypair)
 
 
 If you are lost at any step, you can always type `pchain_client --help`.
@@ -49,11 +49,11 @@ If you are lost at any step, you can always type `pchain_client --help`.
 - [Prepare Environment](#prepare-environment)
 - [Manage Account](#manage-account)
   - [Generate new keypair](#generate-new-keypair)
-  - [Import exsiting keypair](#import-exsiting-keypair)
-  - [List Accounts](#list-accounts)
+  - [Import existing keypair](#import-existing-keypair)
+  - [List accounts](#list-accounts)
 - [Transaction](#transaction)
-  - [Prepare Transaction File](#prepare-transaction-file)
-    - [Create new Transaction File](#create-new-transaction-file)
+  - [Prepare Transaction file](#prepare-transaction-file)
+    - [Create new Transaction file](#create-new-transaction-file)
     - [Append Command to existing file](#append-command-to-existing-file)
   - [Submit Transaction to ParallelChain](#submit-transaction-to-parallelchain)
 - [Query](#query)
@@ -61,17 +61,17 @@ If you are lost at any step, you can always type `pchain_client --help`.
   - [Get Transaction with receipt](#get-transaction-with-receipt)
   - [Get Deposit and Stake](#get-deposit-and-stake)
 - [Smart Contract](#smart-contract)
-  - [Retrieve Contract Address](#retrieve-contract-address)
-  - [Prepare Contract method arguments file](#prepare-contract-method-arguments-file)
+  - [Retrieve contract address](#retrieve-contract-address)
+  - [Prepare contract method arguments file](#prepare-contract-method-arguments-file)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 ## Install and Setup
 ### Installation
-`pchain_client` is an available tool for users on Unix/Linux, MacOS, and Windows operating systems. Simply download the pre-built binary that corresponds with your platform and install the pchain client.
+`pchain_client` is an available tool for users on Unix/Linux, MacOS, and Windows operating systems. Simply download the pre-built binary corresponding to your platform and install the `pchain_client`.
 
-Here are the simple steps to install pchain client.
-  - Open a Web browser and go to [release page](https://github.com/parallelchain-io/pchain-client-cli/releases).
+Here are the simple steps to install `pchain_client`:
+  - Open a web browser and go to [release page](https://github.com/parallelchain-io/pchain-client-cli/releases).
   - Follow the link to download pre-built binary available for your platform.
   - Run the downloaded file.
 
@@ -79,28 +79,28 @@ Here are the simple steps to install pchain client.
 If this is your first time using `pchain_client`, you need to setup `$PCHAIN_CLI_HOME` in environment variables to specify the home path. See more [here](https://chlee.co/how-to-setup-environment-variables-for-windows-mac-and-linux/).
 
 ### Running pchain_client
-Upon first use of `pchain_client`, you will be prompted to set up a password to protect your account keypairs. Please note that this password can be different from the password you used in ParallelChain explorer. Alternatively, you can skip the password protection by simply pressing enter.
+Upon first use of `pchain_client`, you will be prompted to set up a password to protect your account keypairs. Please note that this password can be different from the password you used in ParallelChain Explorer. Alternatively, you can skip the password protection by simply pressing Enter.
 
 Command:
 ```sh
-pchain_client ---version
+pchain_client --version
 ```
-You will require to enter your password twice. If your password is set successfully, you will see return message with pchain_client version on console.
+You will be required to enter your password twice. If your password is set successfully, you will see a return message with `pchain_client` version shown on console.
 
 **WARNING:**
-The password is not sent and saved in anywhere. You won't be able to recover the password if you lost it. Please keep your password safe. You will require to provide this password to submit transaction and manage keypairs later.
+The password is not sent and saved in anywhere. You won't be able to recover the password if you lost it. Please keep your password safe. You will be required to provide this password to submit transactions and manage keypairs later.
 
 ## Prepare Environment
-Before you can submit transaction or query information on ParallelChain, you need to setup your own choice of ParallelChain RPC API provider URL.
+Before you can submit transactions or query information on ParallelChain, you need to setup your own choice of ParallelChain RPC API provider URL.
 
 Command:
 ```sh
 pchain_client config setup --url <URL>
 ```
-This would check the status of your chosen provider. If pchain client cannot connect to your provider, a warning message will be shown and setup is failed. You need to setup another url with the above command again.
+This would check the status of your chosen provider. If `pchain_client` cannot connect to your provider, a warning message will be shown and setup is failed. You need to setup another url with the above command again.
 
 ## Manage Account
-In ParallelChain, account is identified by the public key of Ed25519 keypair. You can either generate new keys or import your exsiting Ed25519 keypair to making transaction in pchain_client. Both operations are password required (if you setup before).
+In ParallelChain, an account is identified by the public key of Ed25519 keypair. You can either generate new keys or import your existing Ed25519 keypair to make transactions in `pchain_client`. Both operations require password (if you setup before).
 
 ### Generate new keypair
 This command generates a set of ed25519_dalek compatible keys. Random name will be set if you do not provide a name.
@@ -108,15 +108,15 @@ This command generates a set of ed25519_dalek compatible keys. Random name will 
 pchain_client keys create --name <NAME>
 ```
 
-### Import exsiting keypair
-If you already get keys from ParallelChain explorer, you can import your account keypair with this command. Random name will be set if you do not provide a name.
+### Import existing keypair
+If you have already got keys from ParallelChain Explorer, you can import your account keypair with this command. Random name will be set if you do not provide a name.
 ```sh
 pchain_client keys import --private <PRIVATE_KEY> --public <PUBLIC_KEY> --name <NAME>
 
 // PRIVATE_KEY and PUBLIC_KEY are Base64url encoded Ed25519 keys.
 ```
 ### List Accounts
-After create or add keypair, you can check it using following command to list out all public keys managed in this tool.
+After creating or adding keypair, you can check it using the following command to list out all public keys managed in this tool.
 ```sh
 pchain_client keys list
 ```
@@ -124,27 +124,27 @@ pchain_client keys list
 ## Transaction 
 A transaction is a digitally signed instruction that tells the ParallelChain state machine to execute a sequence of commands. There are different kinds of [Commands](https://docs.rs/pchain-types/0.4.3/pchain_types/blockchain/enum.Command.html) in ParallelChain protocol. 
 
-`pchain_client` accepts transaction in json format. This section will demonstrate how to prepare your transaction file and submit with your account keys.
+`pchain_client` accepts transaction in json format. This section will demonstrate how to prepare your transaction file and submit it with your account keys.
 ### Prepare Transaction File
 `pchain_client` provides user-friendly way to prepare your transaction file without prior knowledge of JSON (JavaScript Object Notation) format.
-The transaction file with 2 parts: `Parameters` and `Subcommand`.
+The transaction file consists of 2 parts: `Parameters` and `Subcommand`.
 
-Here are some CLI subcommands to indicate corresponding [Protocal Transaction Command](https://docs.rs/pchain-types/0.4.3/pchain_types/blockchain/enum.Command.html). 
+Here are some CLI subcommands to indicate corresponding [Protocol Transaction Command](https://docs.rs/pchain-types/0.4.3/pchain_types/blockchain/enum.Command.html). 
 
 | Subcommand | Action          | Description                                           |
 |------------|-----------------|-------------------------------------------------------|
-| transfer   |                 | Transfer Balance from transaction signer to recipient |
+| transfer   |                 | Transfer balance from transaction signer to recipient |
 | deploy     |                 | Deploy smart contract to the state of the blockchain  |
 | call       |                 | Trigger method call of a deployed smart contract      |
 | deposit    |                 | Deposit some balance into the network account         |
-|            | create          | Instantiation of a Deposit of existing Pool           |
+|            | create          | Instantiation of a Deposit of an existing Pool        |
 |            | top-up          | Increase balance of an existing Deposit               |
 |            | withdraw        | Withdraw balance from an existing Deposit             |
 |            | update-settings | Update settings of an existing Deposit                |
-| stake      |                 | Stake to particular pool                              |
+| stake      |                 | Stake to a particular pool                            |
 |            | stake           | Increase stakes to an existing Pool                   |
 |            | unstake         | Remove stakes from an existing Pool                   |
-| pool       |                 | Create amd manage Pool                                |
+| pool       |                 | Create and manage Pool                                |
 |            | create          | Instantiation of a Pool in the network account        |
 |            | update-settings | Update settings of an existing Pool                   |
 |            | delete          | Delete an existing Pool in the network account        |
@@ -156,7 +156,7 @@ Here are some CLI subcommands to indicate corresponding [Protocal Transaction Co
 pchain_client transaction create --help
 ```
 
-First, provide following 4 parameters:
+First, provide the following 4 parameters:
 ```sh
 pchain_client transaction create \
   --nonce <NONCE> \
@@ -165,9 +165,9 @@ pchain_client transaction create \
   --priority-fee-per-gas <PRIORITY_FEE_PER_GAS> \
 ...
 ```
-Then, decide the transaction type using the [CLI subcommand](#prepare-transaction-file). Each of them takes different inputs. You can always check help menu with `--help`.
+Then, decide the transaction type using the [CLI subcommand](#prepare-transaction-file). Each of them takes different inputs. You can always check help menu using `--help`.
 
-Make sure you provide both `Parameters` and `Subcommand` parts in one command. The output transaction file (tx.json) will be saved in current directory. You can also specify the designated file with flag `--destination`
+Make sure you provide both `Parameters` and `Subcommand` parts in one command. The output transaction file (tx.json) will be saved in the current directory. You can also specify the designated file with the flag `--destination`
 
 Examples:
 ```sh
@@ -195,7 +195,7 @@ pchain_client transaction create \
 ```
 
 #### Append Command to existing file
-As explained in the beginning of [Transaction](#transaction) section, Transaction in ParallelChain protocol accept sequence of commands. But you may find that `transaction create` in previous section only support single Command in Transaction. 
+As explained in the beginning of [Transaction](#transaction) section, Transaction in ParallelChain protocol accepts sequence of commands. But you may find that `transaction create` in previous section only support a single Command in Transaction. 
 
 If you want to support multiple Commands, use following command with the [subcommand](#prepare-transaction-file). This appends a `Command` element to the back of the command array in Transaction. Please note that commands in array will be executed in sequential order.
 
@@ -209,7 +209,7 @@ pchain_client transaction append \
 ```
 
 ### Submit Transaction to ParallelChain
-After prepared the transaction json file, you can now submit the transaction with keypair.
+After preparing the transaction json file, you can now submit the transaction with keypair.
 
 Command:
 ```sh
@@ -217,7 +217,7 @@ pchain_client transaction submit \
 --file <FILE> \
 --keypair-name <KEYPAIR_NAME>
 ```
-You will get following response if the transaction is accepted by your provider:
+You will get the following response if the transaction is accepted by your provider:
 ```sh
 {
   "API Response:": "Your Transaction has been received.",
@@ -237,12 +237,12 @@ You will get following response if the transaction is accepted by your provider:
 
 
 ## Query
-`pchain_client` allows you to query different data from the ParallelChain, not just Transaction or Account related information, but also Validators and Stake Pool details in ParallelChain network. 
+`pchain_client` allows you to query different data from the ParallelChain, not just Transaction or Account related information, but also details of Validators and Stake Pool in ParallelChain network. 
 
-Use `pchain_client query --help` to check the full list avaliable to query.
+Use `pchain_client query --help` to check the full list available to query.
 
 ### Check Account related information
-To check Externally Owned Accounts (EOA) information such as balance and nonce, you always need to provide your account address (public key).
+To check Externally Owned Accounts (EOA) information such as balance and nonce, your account address (public key) is always needed.
 
 Command:
 ```sh
@@ -250,7 +250,7 @@ pchain_client query balance --address <ADDRESS>
 pchain_client query nonce --address <ADDRESS>
 ```
 
-For Contract Account, you can use another command to get all information such as balance, nonce, cbi version and download the contract code binary file(wasm) at once.
+For Contract Account, you can use another command to get all information such as balance, nonce, cbi version and download the contract code binary file (wasm) at once.
 
 Command:
 ```sh
@@ -260,7 +260,7 @@ pchain_client query contract \
 ```
 
 ### Get Transaction with receipt
-In [Submit Transaction to ParallelChain](#submit-transaction-to-parallelchain) section, after you successfully make transaction on ParallelChain, you should receive the transaction hash (tx_hash) in response. This hash is the identity of your transaction. You can always retreive the transaction details with/without receipt by the transaction hash.
+In [Submit Transaction to ParallelChain](#submit-transaction-to-parallelchain) section, after you successfully make transaction on ParallelChain, you should receive the transaction hash (tx_hash) in the response. This hash is the identity of your transaction. You can always retrieve the transaction details with/without receipt by the transaction hash.
 
 Command:
 ```sh
@@ -275,7 +275,7 @@ pchain_client query receipt --hash <TX_HASH>
 ```
 
 ### Get Deposit and Stake
-You can query deposit or stake amount of an account from specific pool stored in Network Account.
+You can query deposit or stake amount of an account from a specific pool stored in Network Account.
 
 Command:
 ```sh
@@ -288,7 +288,7 @@ pchain_client query stake --operator <OPERATOR> --owner <OWNER>
 Smart contracts are computer programs that are stored on a blockchain. You need to provide some necessary information such as contract address, method name, and arguments in order to invoke method of the contract.
 
 ### Retrieve Contract Address
-After you deploy contract in transaction, you should receive the contract address together with transaction hash. What if you want to deploy contract and call method in the SAME transaction, it is possible to compute the contract address in advance.
+After you deploy contract in a transaction, you should receive the contract address together with transaction hash. What if you want to deploy contract and call method in the SAME transaction, it is possible to compute the contract address in advance.
 
 You need to provide the account address and nonce when deploying contract.
 
@@ -298,10 +298,10 @@ pchain_client parse contract-address --address <ADDRESS> --nonce <NONCE>
 ```
 
 ### Prepare Contract method arguments file
-When you make a contract call that modify or view state, the contract method may expects arguments. You need to provide arguments by JSON file(.json) with `transaction create call` or `query view` commands.
+When you make a contract call that modify or view state, the contract method may expect arguments. You need to provide arguments by JSON file(.json) with `transaction create call` or `query view` commands.
 
 Example:
-For a contract method accept 3 arguments (String, Vec<i16> , boolean)
+For a contract method that accepts 3 arguments (String, Vec<i16> , boolean)
 ```sh
 {
     "arguments": [
@@ -311,7 +311,7 @@ For a contract method accept 3 arguments (String, Vec<i16> , boolean)
     ]
 }
 ```
-Each object in arguments array consists two fields `argument_type` and `argument_value`.
+Each object in arguments array consists of two fields, `argument_type` and `argument_value`.
 Here are some acceptable types and values.
 
 | Type        | Description                                   | example                              |
