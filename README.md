@@ -250,23 +250,19 @@ pchain_client query balance --address <ADDRESS>
 pchain_client query nonce --address <ADDRESS>
 ```
 
-For Contract Account, you can use another command to get all information such as balance, nonce, cbi version and download the contract code binary file (wasm) at once.
+For Contract Account, you can use another command to download the contract code binary file (wasm).
 
 Command:
 ```sh
-pchain_client query contract \
-  --address <ADDRESS>
-  --with-code
+pchain_client query contract --address <ADDRESS>
 ```
 
 ### Get Transaction with receipt
-In [Submit Transaction to ParallelChain](#submit-transaction-to-parallelchain) section, after you successfully make transaction on ParallelChain, you should receive the transaction hash (tx_hash) in the response. This hash is the identity of your transaction. You can always retrieve the transaction details with/without receipt by the transaction hash.
+In [Submit Transaction to ParallelChain](#submit-transaction-to-parallelchain) section, after you successfully make transaction on ParallelChain, you should receive the transaction hash (tx_hash) in the response. This hash is the identity of your transaction. You can always retrieve the transaction details with receipt by the transaction hash.
 
 Command:
 ```sh
-pchain_client query tx 
-  --hash <TX_HASH>
-  --with-receipt
+pchain_client query tx --hash <TX_HASH>
 ```
 
 If you just want to get the receipt, you can use following command
