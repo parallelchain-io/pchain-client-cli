@@ -301,7 +301,7 @@ For a contract method that accepts 3 arguments (String, Vec<i16> , boolean)
 ```sh
 {
     "arguments": [
-        {"argument_type": "String", "argument_value": "Yuru Camp"},
+        {"argument_type": "String", "argument_value": "\"Yuru Camp\""},
         {"argument_type": "Vec<i16>", "argument_value":"[-1, 20]"},
         {"argument_type": "bool", "argument_value": "true"}
     ]
