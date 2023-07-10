@@ -161,7 +161,8 @@ pub fn call_result_to_data_type(vec: &Vec<u8>, data_type: String) -> Result<Stri
 pub fn serialize_call_arguments(value: &str, data_type: &str) -> Result<Vec<u8>, DisplayMsg> {
     let mut dt_no_space: String = data_type.replace(' ', "");
 
-    // if input type string is a slice of number type with length 32 or 64 or Option type
+    // if input type string is a slice of number type with length 32 or 64
+    // or Option type of corresponding number array
     let re_option = Regex::new(r"^(Option<)?\[[ui](8|16|32|64|128);(32|64)](>)?$").unwrap();
     if re_option.is_match(&dt_no_space) {
         if value == "null" {
