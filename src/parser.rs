@@ -162,18 +162,10 @@ pub fn serialize_call_arguments(value: &str, data_type: &str) -> Result<Vec<u8>,
     let mut dt_no_space: String = data_type.replace(' ', "");
 
     // if input type string is a slice of number type with length 32 or 64
-    // or Option type of corresponding number array
-    let re_option = Regex::new(r"^(Option<)?\[[ui](8|16|32|64|128);(32|64)](>)?$").unwrap();
+    let re_option = Regex::new(r"^\[[ui](8|16|32|64|128);(32|64)]$").unwrap();
     if re_option.is_match(&dt_no_space) {
-        if value == "null" {
-            dt_no_space = "Option<String>".to_string();
-        } else {
-            if dt_no_space.starts_with("O") {
-                dt_no_space = dt_no_space[7..dt_no_space.len()-1].replace('[', "Array<").replace(';', ",").replace(']', ">");
-            } else {
-                dt_no_space = dt_no_space.replace('[', "Array<").replace(';', ",").replace(']', ">");
-            }
-        }
+        // turn slice into serde json big array type
+        dt_no_space = dt_no_space.replace('[', "Array<").replace(';', ",").replace(']', ">");
     }
 
     macro_rules! serialize_call_args {
@@ -224,7 +216,7 @@ pub fn serialize_call_arguments(value: &str, data_type: &str) -> Result<Vec<u8>,
         Vec<Option<u8>>, Vec<Option<u16>>, Vec<Option<u32>>, Vec<Option<u64>>, Vec<Option<u128>>,
         Vec<Option<bool>>, Vec<Option<String>>,
 
-        Array<u8, 32>, Array<u8, 64>,
+        Array<u8, 32>, Array<u8, 64>, Option<[u8; 32]>,
     );
 }
 
@@ -266,15 +258,13 @@ mod test {
             v.try_to_vec().unwrap()
         });
 
-        assert_eq!(serialize_call_arguments("null", "Option<[ u8 ; 64 ]>").unwrap(), {
-            let v: Option<[u8; 64]> = None;
+        assert_eq!(serialize_call_arguments("null", "Option<[ u8 ; 32 ]>").unwrap(), {
+            let v: Option<[u8; 32]> = None;
             v.try_to_vec().unwrap()
         });
 
-        assert_eq!(serialize_call_arguments("[2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-        2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2]", "Option<[ u8 ; 64 ]>").unwrap(), {
-            let v: [u8; 64] = [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-            2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2];
+        assert_eq!(serialize_call_arguments("[1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2]", "Option<[ u8 ; 32 ]>").unwrap(), {
+            let v: Option<[u8; 32]> = Some([1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2]);
             v.try_to_vec().unwrap()
         });
 
@@ -379,10 +369,8 @@ mod test {
 
                     {"argument_type": "[u8, 32]", "argument_value": "[1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2]"},
                     {"argument_type": "[u8, 64]", "argument_value": "[1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2]"},
-                    {"argument_type": "Option<[u8, 32]>", "argument_value": "[1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2]"},
-                    {"argument_type": "Option<[u8, 32]>", "argument_value": "null"},
-                    {"argument_type": "Option<[u8, 64]>", "argument_value": "[1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2]"},
-                    {"argument_type": "Option<[u8, 64]>", "argument_value": "null"}
+                    {"argument_type": "Option<[u8; 32]>", "argument_value": "[1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2]"},
+                    {"argument_type": "Option<[u8; 32]>", "argument_value": "null"}
                 ]
             }
             
@@ -390,7 +378,7 @@ mod test {
 
         let result = crate::parser::call_arguments_from_json(json_string);
         assert!(result.is_ok());
-        assert_eq!(result.unwrap().len(), 46);
+        assert_eq!(result.unwrap().len(), 44);
     }
 
     #[test]
