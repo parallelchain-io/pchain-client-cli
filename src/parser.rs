@@ -5,7 +5,7 @@
 
 //! Implementation of utility methods related to parsing pchain_types::CallData.
 
-use std::{convert::TryInto, io::{ErrorKind, Error}};
+use std::{convert::TryInto, io::{ErrorKind, Error}, ops::Deref};
 use regex::Regex;
 use serde_big_array::Array;
 use serde_json::Value;
@@ -152,7 +152,7 @@ pub fn call_result_to_data_type(vec: &Vec<u8>, data_type: String) -> Result<Stri
 // accepted primitive types: i8, i16, i32, i64, i128, u8, u16, u32, u64, u128, bool, String, ,
 // Vector of accepted primitve types, Vector of Vector of accepted primitive types
 // Option of accepted primitive types, Vector of option of accepted primitive types, Option of vector of accepted primitive types
-// [u8;32], [u8;64]
+// [u8;32], [u8;64], Option<[u8;32]>, Option<[u8;64]>
 //
 // # Arguments
 // * `value` - the call argument represented in string literal
@@ -162,10 +162,15 @@ pub fn serialize_call_arguments(value: &str, data_type: &str) -> Result<Vec<u8>,
     let mut dt_no_space: String = data_type.replace(' ', "");
 
     // if input type string is a slice of number type with length 32 or 64
-    let re_option = Regex::new(r"^\[[ui](8|16|32|64|128);(32|64)]$").unwrap();
+    let re_option = Regex::new(r"^(Option<)?\[[ui](8|16|32|64|128);(32|64)](>)?$").unwrap();
     if re_option.is_match(&dt_no_space) {
-        // turn slice into serde json big array type
-        dt_no_space = dt_no_space.replace('[', "Array<").replace(';', ",").replace(']', ">");
+        if dt_no_space.starts_with("O") {
+            //turn option slice into option of serde json big array type
+            dt_no_space = dt_no_space.replace("Option<", "Option").replace('[', "Array<").replace(';', ",").replace("]>", ">");
+        } else {
+            // turn slice into serde json big array type
+            dt_no_space = dt_no_space.replace('[', "Array<").replace(';', ",").replace(']', ">");
+        }
     }
 
     macro_rules! serialize_call_args {
@@ -216,8 +221,47 @@ pub fn serialize_call_arguments(value: &str, data_type: &str) -> Result<Vec<u8>,
         Vec<Option<u8>>, Vec<Option<u16>>, Vec<Option<u32>>, Vec<Option<u64>>, Vec<Option<u128>>,
         Vec<Option<bool>>, Vec<Option<String>>,
 
-        Array<u8, 32>, Array<u8, 64>, Option<[u8; 32]>,
+        Array<u8, 32>, Array<u8, 64>, OptionArray<u8, 32>, OptionArray<u8, 64>,
     );
+}
+
+/// [OptionArray] wraps Option type of serde json big array
+/// to make it serde serializable/deserializable
+/// which make Option type of byte slice as argument type acceptable
+#[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Copy, Clone, Debug)]
+pub struct OptionArray<T, const N: usize>(pub Option<Array<T, N>>);
+
+impl<'de, T: serde::de::Deserialize<'de>, const N: usize> serde::de::Deserialize<'de> for OptionArray<T, N> {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::de::Deserializer<'de>,
+    {
+        let option_array: Option<Array<T, N>> = <Option<_> as serde::de::Deserialize>::deserialize(deserializer)?;
+        Ok(OptionArray(option_array))
+    }
+}
+
+impl<T: serde::ser::Serialize, const N: usize> serde::ser::Serialize for OptionArray<T, N> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde::ser::Serializer, 
+    {
+        match self.0.as_ref() {
+            Some(inner) => <[T; N] as serde_big_array::BigArray<T>>::serialize(&inner.0, serializer),
+            None => serializer.serialize_none(),
+        }
+    }
+}
+
+impl<T, const N: usize> Deref for OptionArray<T, N> {
+    type Target = Option<[T; N]>;
+
+    fn deref(&self) -> &Self::Target {
+        unsafe {
+            // Safety: ensure the size and alignment of `BigArray<T, N>` and `[T; N]` are the same
+            std::mem::transmute(&self.0)
+        }
+    }
 }
 
 
@@ -258,13 +302,13 @@ mod test {
             v.try_to_vec().unwrap()
         });
 
-        assert_eq!(serialize_call_arguments("null", "Option<[ u8 ; 32 ]>").unwrap(), {
-            let v: Option<[u8; 32]> = None;
+        assert_eq!(serialize_call_arguments("[1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2]", "Option<[ u8 ; 32 ]>").unwrap(), {
+            let v: Option<[u8; 32]> = Some([1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2]);
             v.try_to_vec().unwrap()
         });
 
-        assert_eq!(serialize_call_arguments("[1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2]", "Option<[ u8 ; 32 ]>").unwrap(), {
-            let v: Option<[u8; 32]> = Some([1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2]);
+        assert_eq!(serialize_call_arguments("null", "Option<[ u8 ; 64 ]>").unwrap(), {
+            let v: Option<[u8; 64]> = None;
             v.try_to_vec().unwrap()
         });
 
@@ -370,7 +414,7 @@ mod test {
                     {"argument_type": "[u8, 32]", "argument_value": "[1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2]"},
                     {"argument_type": "[u8, 64]", "argument_value": "[1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2]"},
                     {"argument_type": "Option<[u8; 32]>", "argument_value": "[1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2]"},
-                    {"argument_type": "Option<[u8; 32]>", "argument_value": "null"}
+                    {"argument_type": "Option<[u8; 64]>", "argument_value": "null"}
                 ]
             }
             
