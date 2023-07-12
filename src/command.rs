@@ -350,7 +350,7 @@ pub enum Parse {
         decode: bool,
         
         /// The Base64 string to decode. / The byte array to encode. Please wrap value with quotation marks like "[8,8,8]" or "AAAA"
-        #[clap(long="value", display_order=3)]
+        #[clap(long="value", display_order=3, allow_hyphen_values(true))]
         value: String,
     },
     
