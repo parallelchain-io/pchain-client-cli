@@ -42,7 +42,7 @@ If you are lost at any step, you can always type `pchain_client --help`.
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
-## Common use cases
+## Common Use Cases
 - [Install and Setup](#install-and-setup)
   - [Installation](#installation)
   - [Running pchain_client](#running-pchain_client)
@@ -102,13 +102,13 @@ This would check the status of your chosen provider. If `pchain_client` cannot c
 ## Manage Account
 In ParallelChain, an account is identified by the public key of Ed25519 keypair. You can either generate new keys or import your existing Ed25519 keypair to make transactions in `pchain_client`. Both operations require password (if you setup before).
 
-### Generate new keypair
+### Generate New Keypair
 This command generates a set of ed25519_dalek compatible keys. Random name will be set if you do not provide a name.
 ```sh
 pchain_client keys create --name <NAME>
 ```
 
-### Import existing keypair
+### Import Existing Keypair
 If you have already got keys from ParallelChain Explorer, you can import your account keypair with this command. Random name will be set if you do not provide a name.
 ```sh
 pchain_client keys import --private <PRIVATE_KEY> --public <PUBLIC_KEY> --name <NAME>
@@ -149,7 +149,7 @@ Here are some CLI subcommands to indicate corresponding [Protocol Transaction Co
 |            | update-settings | Update settings of an existing Pool                   |
 |            | delete          | Delete an existing Pool in the network account        |
 
-#### Create new Transaction File
+#### Create New Transaction File
 `Transaction` in ParallelChain protocol specifies a set of parameters included in the instruction. You don't need to provide all parameters, some of them would be computed and filled in automatically when you submit the transaction.
 
 ```sh
@@ -194,7 +194,7 @@ pchain_client transaction create \
     --cbi-version 0
 ```
 
-#### Append Command to existing file
+#### Append Command to Existing File
 As explained in the beginning of [Transaction](#transaction) section, Transaction in ParallelChain protocol accepts sequence of commands. But you may find that `transaction create` in previous section only support a single Command in Transaction. 
 
 If you want to support multiple Commands, use following command with the [subcommand](#prepare-transaction-file). This appends a `Command` element to the back of the command array in Transaction. Please note that commands in array will be executed in sequential order.
@@ -241,7 +241,7 @@ You will get the following response if the transaction is accepted by your provi
 
 Use `pchain_client query --help` to check the full list available to query.
 
-### Check Account related information
+### Check Account Related Information
 To check Externally Owned Accounts (EOA) information such as balance and nonce, your account address (public key) is always needed.
 
 Command:
@@ -257,7 +257,7 @@ Command:
 pchain_client query contract --address <ADDRESS>
 ```
 
-### Get Transaction with receipt
+### Get Transaction with Receipt
 In [Submit Transaction to ParallelChain](#submit-transaction-to-parallelchain) section, after you successfully make transaction on ParallelChain, you should receive the transaction hash (tx_hash) in the response. This hash is the identity of your transaction. You can always retrieve the transaction details with receipt by the transaction hash.
 
 Command:
@@ -293,7 +293,7 @@ Command:
 pchain_client parse contract-address --address <ADDRESS> --nonce <NONCE>
 ```
 
-### Prepare Contract method arguments file
+### Prepare Contract Method Arguments File
 When you make a contract call that modify or view state, the contract method may expect arguments. You need to provide arguments by JSON file(.json) with `transaction create call` or `query view` commands.
 
 Example:
@@ -301,7 +301,7 @@ For a contract method that accepts 3 arguments (String, Vec<i16> , boolean)
 ```sh
 {
     "arguments": [
-        {"argument_type": "String", "argument_value": "Yuru Camp"},
+        {"argument_type": "String", "argument_value": "\"Yuru Camp\""},
         {"argument_type": "Vec<i16>", "argument_value":"[-1, 20]"},
         {"argument_type": "bool", "argument_value": "true"}
     ]
@@ -310,7 +310,7 @@ For a contract method that accepts 3 arguments (String, Vec<i16> , boolean)
 Each object in arguments array consists of two fields, `argument_type` and `argument_value`.
 Here are some acceptable types and values.
 
-| Type        | Description                                   | example                              |
+| Type        | Description                                   | Example value                        |
 |-------------|-----------------------------------------------|--------------------------------------|
 | `i8`        | The 8-bit signed integer type.                | "-128"                               |
 | `i16`       | The 16-bit signed integer type.               | "-32768"                             |
@@ -320,7 +320,7 @@ Here are some acceptable types and values.
 | `u16`       | The 16-bit unsigned integer type.             | "65535"                              |
 | `u32`       | The 32-bit unsigned integer type.             | "4294967295"                         |
 | `u64`       | The 64-bit unsigned integer type.             | "18446744073709551615"               |
-| `String`    | String                                        | "\"This is test string\""            |
+| `String`    | String                                        | "\\"This is test string\\""          |
 | `bool`      | Boolean                                       | "true" or "false"                    |
 | `Vec<TYPE>` | Array with specific type and arbitrary length | "[65535,6535]" , "[true,false,true]" |
 | `[5]`       | Array with specific length                    | "[1,2,3,4,5]"                        |
