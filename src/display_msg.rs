@@ -1,5 +1,10 @@
-use std::{fmt, path::PathBuf};
+/*
+    Copyright © 2023, ParallelChain Lab
+    Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
+*/
+
 use pchain_types::rpc::SubmitTransactionError;
+use std::{fmt, path::PathBuf};
 
 use crate::command::{Base64Address, Base64Hash, Base64String};
 
@@ -14,9 +19,9 @@ pub enum DisplayMsg {
     ///////////////////////////
     // Argument Decode Error //
     ///////////////////////////
-    FailToDecodeBase64Address(IdentityName,  Base64Address, ErrorMsg),
-    FailToDecodeBase64Hash(IdentityName,  Base64Hash, ErrorMsg),
-    FailToDecodeBase64String(IdentityName,  Base64String, ErrorMsg),
+    FailToDecodeBase64Address(IdentityName, Base64Address, ErrorMsg),
+    FailToDecodeBase64Hash(IdentityName, Base64Hash, ErrorMsg),
+    FailToDecodeBase64String(IdentityName, Base64String, ErrorMsg),
 
     //////////////////////////////
     // File Encode/Decode Error //
@@ -131,43 +136,43 @@ impl fmt::Display for DisplayMsg {
             //////////////////////////////
             // File Encode/Decode Error //
             //////////////////////////////
-            DisplayMsg::FailToUTF8DecodeFile(file_name, path, error) => 
+            DisplayMsg::FailToUTF8DecodeFile(file_name, path, error) =>
                 write!(f, "Error: Provided {file_name} file at {:?} is not utf8 decodable. {error}", path),
-            DisplayMsg::InvalidTOMLFormat(file_name, path, error) => 
+            DisplayMsg::InvalidTOMLFormat(file_name, path, error) =>
                 write!(f, "Error: Provided {file_name} file at {:?} is not correct toml format. {error}", path),
-            DisplayMsg::FailToTOMLEncode(file_name, path, error) => 
+            DisplayMsg::FailToTOMLEncode(file_name, path, error) =>
                 write!(f, "Error: Cannot encode {file_name} file at {:?} to toml format. {error}", path),
-            DisplayMsg::FailToEncodeJson(file_name, path, error) => 
+            DisplayMsg::FailToEncodeJson(file_name, path, error) =>
                 write!(f, "Error: Cannot encode {file_name} file at {:?} to json format. {error}", path),
-            DisplayMsg::FailToDecodeJson(file_name, path, error) => 
+            DisplayMsg::FailToDecodeJson(file_name, path, error) =>
                 write!(f, "Error: Cannot decode provided {file_name} json file at {:?} to desired shape. {error}", path),
 
             ////////////////////////
             // Cli argument error //
             ///////////////////////
-            DisplayMsg::IncorrectCombinationOfIdentifiers(identifiers) => 
+            DisplayMsg::IncorrectCombinationOfIdentifiers(identifiers) =>
                 write!(f, "Error: Invalid combination of input. Please specify a correct identifier (\"{}\" ).", identifiers),
-            DisplayMsg::IncorrectFormatForSuppliedArgument(error) => 
+            DisplayMsg::IncorrectFormatForSuppliedArgument(error) =>
             write!(f, "Error: Supplied Argument is of incorrect format. It should be in form of (\"{}\" ).", error),
 
             ////////////////
             // Query Msg //
             ///////////////
-            DisplayMsg::CannotFindLatestBlock => 
+            DisplayMsg::CannotFindLatestBlock =>
                 write!(f, "Error: Cannot find find latest block."),
             DisplayMsg::CannotFindRelevantBlock =>
                 write!(f, "Cannot find relevant block."),
             DisplayMsg::CannotFindRelevantBlockHeader =>
                 write!(f, "Cannot find relevant block header"),
-            DisplayMsg::CannotFindRelevantTransaction => 
+            DisplayMsg::CannotFindRelevantTransaction =>
                 write!(f, "Cannot find relevant transaction."),
-            DisplayMsg::CannotFindRelevantReceipt => 
+            DisplayMsg::CannotFindRelevantReceipt =>
                 write!(f, "Cannot find relevant receipt."),
-            DisplayMsg::CannotFindRelevantState => 
+            DisplayMsg::CannotFindRelevantState =>
                 write!(f, "Cannot find relevant state."),
-            DisplayMsg::CannotFindOperator => 
+            DisplayMsg::CannotFindOperator =>
                 write!(f, "Cannot find relevant operator."),
-            DisplayMsg::CannotFindOperatorOwnerPair => 
+            DisplayMsg::CannotFindOperatorOwnerPair =>
                 write!(f, "Cannot find relevant operator owner pair."),
             DisplayMsg::CannotFindValidatorSet =>
                 write!(f, "No validator set exists at the requested time frame."),
@@ -196,17 +201,16 @@ impl fmt::Display for DisplayMsg {
             ////////////////
             // Config Msg //
             ////////////////
-            DisplayMsg::PChainCliHomeNotSet(home) => 
+            DisplayMsg::PChainCliHomeNotSet(home) =>
                 write!(f, "enviroment variable ${home} isn't set. Please specify the home folder of ParallelChain Client CLI"),
-            DisplayMsg::InavtiveRPCProvider(url) => 
+            DisplayMsg::InavtiveRPCProvider(url) =>
                 write!(f, "Warning: The chosen provider <{}> is currently not active. Please switch to another active provider by `setup` command.", url),
-            DisplayMsg::ActiveRPCProvider(url) => 
+            DisplayMsg::ActiveRPCProvider(url) =>
                 write!(f, "Provider <{url}> is Active"),
-            DisplayMsg::ListRPCProvider(url) => 
+            DisplayMsg::ListRPCProvider(url) =>
                 write!(f, "Fullnode RPC Provider is <{url}>"),
             DisplayMsg::NotYetSetRPCProvider =>
                 write!(f, "Warning: Fullnode RPC url is not setup. \nPlease use command `./pchain_client config setup --url <URL>` to specify the node to connect."),
-
             /////////////////
             // keypair msg //
             /////////////////
@@ -220,35 +224,33 @@ impl fmt::Display for DisplayMsg {
                 write!(f, "Error: Keypair name {keypair_name} provided does not exist. Please generate a keypair by `./pchain_client keys create --name <NAME>`"),
             DisplayMsg::InvalidEd25519Keypair(error) =>
                 write!(f, "Error: Invalid Ed25519 keypair. {error}"),
-            DisplayMsg::ParseKeypairFailure(serde_json::Error{ .. }) => 
+            DisplayMsg::ParseKeypairFailure(serde_json::Error{ .. }) =>
                 write!(f, "Error: keypair json is corrupted. Please backup the keypair.json and use command) 
             `./pchain_client keys add --private-key <PRIVATE_KEY> --public-key <PUBLIC_KEY> --name <NAME>` to re-import your keys"),
-            DisplayMsg::FailToSignMessage(error) => 
+            DisplayMsg::FailToSignMessage(error) =>
                 write!(f, "Fail to sign message by provided keypair. {error}"),
-       
-                
             /////////////////
             // File IO Msg //
             /////////////////
-            DisplayMsg::IncorrectFilePath(file_name, path, error) => 
+            DisplayMsg::IncorrectFilePath(file_name, path, error) =>
                 write!(f, "Error: Invalid path. Cannot retrieve designated {file_name} file from the designated path at <{:?}>. {:#?}", path, error),
-            DisplayMsg::FailToOpenOrReadFile(file_name, path, error) => 
+            DisplayMsg::FailToOpenOrReadFile(file_name, path, error) =>
                 write!(f, "Error: Failed to read {file_name} file at <{:?}> although file is found. {:#?}", path, error),
-            DisplayMsg::FailToWriteFile(file_name, path, error) => 
+            DisplayMsg::FailToWriteFile(file_name, path, error) =>
                 write!(f, "Error: Failed to write {file_name} file at <{:?}> although file is found. {:#?}", path, error),
-            DisplayMsg::FailToCreateDir(file_name, path, error) => 
+            DisplayMsg::FailToCreateDir(file_name, path, error) =>
                 write!(f, "Error: Fail to create necessary directory for {file_name} file at <{:?}>. {:#?}", path, error),
-            DisplayMsg::FailToCreateFile(file_name, path, error) => 
+            DisplayMsg::FailToCreateFile(file_name, path, error) =>
                 write!(f, "Error: Fail to create {file_name} file at <{:?}>. {:#?}", path, error),
-            DisplayMsg::SuccessCreateFile(file_name, path) => 
+            DisplayMsg::SuccessCreateFile(file_name, path) =>
                 write!(f, "Successfully create {file_name} file at <{:?}>.", path),
-            DisplayMsg::SuccessUpdateFile(file_name, path) => 
+            DisplayMsg::SuccessUpdateFile(file_name, path) =>
                 write!(f, "Successfully update {file_name} file at <{:?}>.", path),
 
             ////////////////////
             // HTTP Error Msg //
             ////////////////////
-            DisplayMsg::RespnoseWithHTTPError(error) => 
+            DisplayMsg::RespnoseWithHTTPError(error) =>
                 write!(f, "{error}"),
 
 
@@ -273,24 +275,20 @@ impl fmt::Display for DisplayMsg {
             /////////////////
             // Parser Msg  //
             /////////////////
-            DisplayMsg::InvalidJson(e) => 
+            DisplayMsg::InvalidJson(e) =>
                 write!(f, "Provided json is not valid. {e}"),
-            DisplayMsg::MissingFieldinJson(field_name) => 
+            DisplayMsg::MissingFieldinJson(field_name) =>
                 write!(f, "Provided json does not contain field with name : {field_name}"),
-            DisplayMsg::FailToBase64DecodeKeypair => 
+            DisplayMsg::FailToBase64DecodeKeypair =>
                 write!(f, "Fail to base64 decode keypair."),
-            DisplayMsg::FailToConvertReturnDataToTargetType(e) => 
+            DisplayMsg::FailToConvertReturnDataToTargetType(e) =>
                 write!(f, "Fail to convert to target data type. {e}"),
             DisplayMsg::FailToSerializeCallArgument(e) =>
                 write!(f, "Fail to serialize call argument. {e}"),
-            DisplayMsg::InvalidBase64Encoding(identity) => 
+            DisplayMsg::InvalidBase64Encoding(identity) =>
                 write!(f, "Provided {identity} has invalid base64 encoding"),
-            DisplayMsg::IncorrectBase64urlLength => 
+            DisplayMsg::IncorrectBase64urlLength =>
                 write!(f, "Incorrect length. Correct length should be 32 bytes long."),
-            
         }
-    }    
+    }
 }
-
-
-
