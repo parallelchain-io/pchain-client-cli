@@ -1,5 +1,5 @@
 use std::{fmt, path::PathBuf};
-use pchain_types::rpc::SubmitTransactionError;
+use pchain_types::rpc::SubmitTransactionErrorV1;
 
 use crate::command::{Base64Address, Base64Hash, Base64String};
 
@@ -51,7 +51,7 @@ pub enum DisplayMsg {
     // Transaction Msg //
     /////////////////////
     SuccessSubmitTx,
-    FailSubmitTx(SubmitTransactionError),
+    FailSubmitTx(SubmitTransactionErrorV1),
     FailToParseCallArguments(ErrorMsg),
     FailToParseCallResult(ErrorMsg),
     InvalidTxCommand(ErrorMsg),
@@ -181,9 +181,9 @@ impl fmt::Display for DisplayMsg {
                 write!(f, "Transaction is submitted to ParallelChain but not completely get through yet. Check explorer or wallet for updated status."),
             DisplayMsg::FailSubmitTx(error) => {
                 match error {
-                    SubmitTransactionError::MempoolFull => write!(f, "Error: Submit Transation Fail. Mempool is full."),
-                    SubmitTransactionError::UnacceptableNonce => write!(f, "Error: Submit Transation Fail. Nonce is not within acceptable range."),
-                    SubmitTransactionError::Other => write!(f, "Error: Submit Transation Fail. Please ensure gas limit, base fee or transaction size is within range."),
+                    SubmitTransactionErrorV1::MempoolFull => write!(f, "Error: Submit Transation Fail. Mempool is full."),
+                    SubmitTransactionErrorV1::UnacceptableNonce => write!(f, "Error: Submit Transation Fail. Nonce is not within acceptable range."),
+                    SubmitTransactionErrorV1::Other => write!(f, "Error: Submit Transation Fail. Please ensure gas limit, base fee or transaction size is within range."),
                 }
             },
             DisplayMsg::FailToParseCallArguments(e) =>

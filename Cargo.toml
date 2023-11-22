@@ -17,9 +17,9 @@ display_json = "0.2.1"
 dunce = "1.0.2"
 home = "0.5"
 base64url = "0.1.0"
-pchain-client = { git = "https://github.com/parallelchain-io/pchain-client-rust"}
-pchain-types = "=0.4.3"
-hotstuff_rs = "^0.2"
+pchain-client = { git = "https://github.com/parallelchain-io/pchain-client-rust", branch = "protocol_v0.5"}
+pchain-types = { git = "https://github.com/parallelchain-io/pchain-types-rust", branch = "protocol_v0.5" }
+hotstuff_rs = { git = "https://github.com/parallelchain-io/hotstuff_rs", branch = "0.3" }
 regex = "1.5"
 rust-format = "0.3"
 serde = { version = "1", features = ["derive"] }
@@ -33,9 +33,6 @@ age = "0.9"
 borsh = "=0.10.2"
 sha2 = "0.10"
 
-# It still uses old version of rand(v0.7). 
-ed25519-dalek = "1.0.1"
-# ed25519-dalek requires rand(v0.7)
-rand = "0.7"
-# rand_chacha requires rand (v0.7) to operate
-rand_chacha = "0.2"
+ed25519-dalek = "2.0.0"
+rand = "0.8.5"
+rand_chacha = "0.3.1"

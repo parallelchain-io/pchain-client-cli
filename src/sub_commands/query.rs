@@ -7,7 +7,7 @@
 
 use std::collections::{HashSet, HashMap};
 use std::path::PathBuf;
-use pchain_client::Client;
+use pchain_client::ClientV1;
 use pchain_types::rpc::*;
 
 use crate::command::{Query, Validators};
@@ -26,7 +26,7 @@ use crate::utils::read_file_to_utf8string;
 //  
 pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
     let url = config.get_url();
-    let pchain_client = Client::new(url);
+    let pchain_client = ClientV1::new(url);
 
     match query_subcommand {
         Query::Balance{address} => {

@@ -5,6 +5,7 @@
 
 //! Methods related to subcommand `crypto` in `pchain-client`.
 use ed25519_dalek::Signer;
+
 use crate::command::Keys;
 use crate::display_msg::DisplayMsg;
 use crate::keypair::{
@@ -12,6 +13,7 @@ use crate::keypair::{
     add_keypair, load_existing_keypairs, get_keypair_from_json
 };
 use crate::{config, utils};
+use std::convert::TryFrom;
 
 // `match_crypto_subcommand` matches a CLI argument to its corresponding `Crypto` subcommand and processes 
 //  the request.
@@ -77,8 +79,8 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
                             std::process::exit(1);
                         }
                     };
-            
-                    match ed25519_dalek::Keypair::from_bytes(&keypair_bs) {
+    
+                    match ed25519_dalek::SigningKey::from_keypair_bytes(&<[u8; 64]>::try_from(&keypair_bs[..]).unwrap()) {
                         Ok(kp) => kp,
                         Err(e) => {
                             println!("{}", DisplayMsg::InvalidEd25519Keypair(e.to_string()));
@@ -98,7 +100,7 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
 
             let encoded_ciphertext = match base64url::decode(&message){
                 Ok(serialized_credentials) => {
-                    let ciphertext : ed25519_dalek::Signature = keypair.sign(&serialized_credentials[..]);
+                    let ciphertext = keypair.sign(&serialized_credentials[..]).to_bytes();
                     base64url::encode(ciphertext)
                 },
                 Err(e) => {

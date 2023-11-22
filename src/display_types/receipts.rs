@@ -23,14 +23,14 @@ pub struct CommandReceipt {
     pub logs: Vec<Event>,
 }
 
-impl From<pchain_types::blockchain::CommandReceipt> for CommandReceipt {
-    fn from(receipt: pchain_types::blockchain::CommandReceipt) -> CommandReceipt {
+impl From<pchain_types::blockchain::CommandReceiptV1> for CommandReceipt {
+    fn from(receipt: pchain_types::blockchain::CommandReceiptV1) -> CommandReceipt {
         let events_beautified: Vec<Event> = receipt.logs.into_iter().map(
             |pchain_types_event|{
                 From::<pchain_types::blockchain::Log>::from(pchain_types_event)
         }).collect();
 
-        let status_code = format!("{:?}", receipt.exit_status);
+        let status_code = format!("{:?}", receipt.exit_code);
         CommandReceipt {
             status_code,
             gas_used: receipt.gas_used,

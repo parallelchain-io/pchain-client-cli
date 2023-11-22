@@ -5,7 +5,7 @@
 
 //! Methods related to subcommand `submit` in `pchain-client`.
 
-use pchain_client::Client;
+use pchain_client::ClientV1;
 use std::path::PathBuf;
 
 use crate::display_msg::DisplayMsg;
@@ -24,7 +24,7 @@ use crate::utils::read_file_to_utf8string;
 //  
 pub async fn match_submit_subcommand(tx_subcommand: Transaction, config: Config) {
     let url = config.get_url();
-    let pchain_client = Client::new(url);
+    let pchain_client = ClientV1::new(url);
 
     match tx_subcommand {
         Transaction::Submit {file, keypair_name} => {   

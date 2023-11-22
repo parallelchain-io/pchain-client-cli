@@ -106,14 +106,16 @@ pub fn generate_keypair(keypair_name: &str) -> KeypairJSON {
     let mut chacha20_rng = ChaCha20Rng::from_rng(&mut osrng).unwrap();
     let keypair = pchain_types::cryptography::Keypair::generate(&mut chacha20_rng);
 
-    let secret = keypair.secret.as_bytes();
-    let public = keypair.public.as_bytes();
+
+    let secret = keypair.as_bytes();
+    let verifying = keypair.verifying_key().clone();
+    let public = verifying.as_bytes();
 
     KeypairJSON {
         name: keypair_name.to_string(),
         private_key: base64url::encode(secret),
         public_key: base64url::encode(public),
-        keypair: base64url::encode(keypair.to_bytes()),
+        keypair: base64url::encode(keypair.to_keypair_bytes()),
     }
 } 
 
@@ -124,6 +126,7 @@ pub fn generate_keypair(keypair_name: &str) -> KeypairJSON {
 //  * `keypair_name` - name of the keypair saved on the JSON file
 //
 pub fn add_keypair(private_key: &str, public_key: &str, name: &str) -> Result<KeypairJSON, DisplayMsg> {
+    use std::convert::TryFrom;
     let mut sender_public_key = match base64url::decode(&public_key) {
         Ok(addr) => addr,
         Err(e) => {
@@ -139,7 +142,7 @@ pub fn add_keypair(private_key: &str, public_key: &str, name: &str) -> Result<Ke
 
     // Concatenate two keys together
     sender_private_key.append(&mut sender_public_key);
-    let keypair: ed25519_dalek::Keypair = match ed25519_dalek::Keypair::from_bytes(&sender_private_key[..]) {
+    let keypair = match ed25519_dalek::SigningKey::from_keypair_bytes(&<[u8; 64]>::try_from(&sender_private_key[..]).unwrap()) {
         Ok(k) => k,
         Err(e) => panic!("{}", DisplayMsg::InvalidEd25519Keypair(e.to_string())),
     };

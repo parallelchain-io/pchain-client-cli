@@ -14,7 +14,7 @@ use std::path::{Path, PathBuf};
 use std::ffi::OsStr;
 use pchain_types::{ blockchain::Command, runtime::*};
 
-use crate::display_msg::{DisplayMsg};
+use crate::display_msg::DisplayMsg;
 use crate::command::Base64String;
 use crate::display_types::{TxCommand, Receipt, Event};
 use crate::keypair::{get_keypair_from_json};
@@ -34,8 +34,8 @@ pub struct Transaction {
     pub signature: Base64String,
 }
 
-impl From<pchain_types::blockchain::Transaction> for Transaction { 
-    fn from(transaction: pchain_types::blockchain::Transaction) -> Transaction {
+impl From<pchain_types::blockchain::TransactionV1> for Transaction { 
+    fn from(transaction: pchain_types::blockchain::TransactionV1) -> Transaction {
         let mut json_values = vec![];
         for command in transaction.commands {
             let v = match command {
@@ -216,7 +216,7 @@ impl SubmitTx {
     pub fn prepare_signed_tx(
         self,
         keypair_name: &str, 
-    ) -> Result<pchain_types::blockchain::Transaction, DisplayMsg> {
+    ) -> Result<pchain_types::blockchain::TransactionV1, DisplayMsg> {
         let keypair_json_of_given_user = match get_keypair_from_json(get_keypair_path(), keypair_name){
             Ok(Some(s)) => s,
             Ok(None) => {
@@ -232,7 +232,8 @@ impl SubmitTx {
                 return Err(DisplayMsg::FailToDecodeBase64String(String::from("keypair"), keypair_json_of_given_user.keypair, e.to_string()));
             }
         };
-        let keypair = match ed25519_dalek::Keypair::from_bytes(&keypair_bs) {
+
+        let keypair = match ed25519_dalek::SigningKey::from_keypair_bytes(&<[u8; 64]>::try_from(&keypair_bs[..]).unwrap()) {
             Ok(kp) => kp,
             Err(e) => {
                 println!("{}", DisplayMsg::InvalidEd25519Keypair(e.to_string()));
@@ -248,7 +249,7 @@ impl SubmitTx {
             }
         }
 
-        let transaction = pchain_types::blockchain::Transaction::new(
+        let transaction = pchain_types::blockchain::TransactionV1::new(
             &keypair,
             self.nonce,
             commands,
@@ -312,12 +313,12 @@ pub struct TransactionWithReceipt {
     pub receipt: Receipt
 }
 
-impl From<(pchain_types::blockchain::Transaction, pchain_types::blockchain::Receipt) > for TransactionWithReceipt {
-    fn from((tx, receipt): (pchain_types::blockchain::Transaction, pchain_types::blockchain::Receipt)) -> TransactionWithReceipt {
+impl From<(pchain_types::blockchain::TransactionV1, pchain_types::blockchain::ReceiptV1) > for TransactionWithReceipt {
+    fn from((tx, receipt): (pchain_types::blockchain::TransactionV1, pchain_types::blockchain::ReceiptV1)) -> TransactionWithReceipt {
         TransactionWithReceipt{
-            transaction: From::<pchain_types::blockchain::Transaction>::from(tx),
+            transaction: From::<pchain_types::blockchain::TransactionV1>::from(tx),
             receipt: receipt.iter().map(|p|{
-                From::<pchain_types::blockchain::CommandReceipt>::from(p.clone())
+                From::<pchain_types::blockchain::CommandReceiptV1>::from(p.clone())
             }).collect()
         }
     }
