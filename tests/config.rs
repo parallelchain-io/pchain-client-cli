@@ -1,4 +1,6 @@
 use std::process::Command;
+use serial_test::serial;
+
 use crate::common::{TestEnv, expect_output};
 
 mod common;
@@ -7,6 +9,7 @@ mod common;
 /// - Expect:   Display CLI version and usage
 /// - Command:  ./pchain_client
 #[test]
+#[serial]
 fn test_pchain_client() {
     let env = TestEnv::new();
 
@@ -26,6 +29,7 @@ fn test_pchain_client() {
 /// - Expect:   display usage of config command
 /// - Command:  ./pchain_client config
 #[test]
+#[serial]
 fn test_config() {
     let env = TestEnv::new();
 
@@ -46,6 +50,7 @@ fn test_config() {
 /// - Expect:   display RPC url configuration (empty)
 /// - Command:  ./pchain_client config list
 #[test]
+#[serial]
 fn test_config_list() {
     let env = TestEnv::new();
 
@@ -64,6 +69,7 @@ fn test_config_list() {
 ///   - ./pchain_client config setup
 ///   - ./pchain_client config setup --url <URL>
 #[test]
+#[serial]
 fn test_config_setup() {
     let env = TestEnv::new();
 

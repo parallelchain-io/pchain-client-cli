@@ -1,6 +1,7 @@
 use std::process::Command;
 
 use common::{TestEnv, expect_output};
+use serial_test::serial;
 
 mod common;
 
@@ -8,6 +9,7 @@ mod common;
 /// - Expect:   Display usage
 /// - Command:  ./pchain_client parse
 #[test]
+#[serial]
 fn test_parse() {
     let env = TestEnv::new();
 
@@ -28,6 +30,7 @@ fn test_parse() {
 /// - Expect:   Display usage
 /// - Command:  ./pchain_client parse base64-encoding
 #[test]
+#[serial]
 fn test_parse_base64_encoding() {
     let env = TestEnv::new();
 
@@ -49,6 +52,7 @@ fn test_parse_base64_encoding() {
 /// - Expect:   Show the result of base64url string
 /// - Command:  ./pchain_client parse base64-encoding --encode --value <VALUE>
 #[test]
+#[serial]
 fn test_parse_base64_encoding_encode() {
     let env = TestEnv::new();
 
@@ -69,6 +73,7 @@ fn test_parse_base64_encoding_encode() {
 /// - Expect:   Show the result of decoded bytes
 /// - Command:  ./pchain_client parse base64-encoding --decode --value <VALUE>
 #[test]
+#[serial]
 fn test_parse_base64_encoding_decode() {
     let env = TestEnv::new();
 
@@ -89,6 +94,7 @@ fn test_parse_base64_encoding_decode() {
 /// - Expect:   Display Usage
 /// - Command:  ./pchain_client parse call-result
 #[test]
+#[serial]
 fn test_parse_call_result() {
     let env = TestEnv::new();
 
@@ -110,6 +116,7 @@ fn test_parse_call_result() {
 /// - Expect:   Show the value of the decoded data
 /// - Command:  ./pchain_client parse call-result --value <VALUE> --data-type <DATA_TYPE>
 #[test]
+#[serial]
 fn test_parse_call_result_from_data_type() {
     let env = TestEnv::new();
 
@@ -131,6 +138,7 @@ fn test_parse_call_result_from_data_type() {
 /// - Expect:   Show the value of the decoded data
 /// - Command:  ./pchain_client parse call-result --value <VALUE> --data-type <DATA_TYPE>
 #[test]
+#[serial]
 fn test_parse_call_result_from_schema() {
     let env = TestEnv::new();
     let test_file = env.add_file("test.json",

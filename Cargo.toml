@@ -42,3 +42,4 @@ rand_chacha = "0.2"
 
 [dev-dependencies]
 temp-dir = "0.1.11"
+serial_test = "2.0.0"

@@ -5,6 +5,7 @@ use ed25519_dalek::Signature;
 use pchain_types::cryptography::Keypair;
 use rand_chacha::rand_core::OsRng;
 use serde_json::Value;
+use serial_test::serial;
 
 mod common;
 
@@ -12,6 +13,7 @@ mod common;
 /// - Expect:   Display usage
 /// - Command:  ./pchain_client keys
 #[test]
+#[serial]
 fn test_keys() {
     let env = TestEnv::new();
 
@@ -32,6 +34,7 @@ fn test_keys() {
 /// - Expect:   Display the list of keys
 /// - Command:  ./pchain_client keys list
 #[test]
+#[serial]
 fn test_keys_list() {
     let env = TestEnv::new();
 
@@ -52,6 +55,7 @@ fn test_keys_list() {
 /// - Expect:   The created keypair is set to the list of keys
 /// - Command:  ./pchain_client keys create
 #[test]
+#[serial]
 fn test_keys_create() {
     let env = TestEnv::new();
 
@@ -91,6 +95,7 @@ fn test_keys_create() {
 ///     - ./pchain_client keys import --public <PUBLIC> --private <PRIVATE> --name <NAME>
 ///     - ./pchain_client keys export --name <NAME> --destination <DESTINATION>
 #[test]
+#[serial]
 fn test_keys_import_export() {
     let env = TestEnv::new();
     let env_export_key_path = env.cli_home.path().join("testkey.json");
@@ -150,6 +155,7 @@ fn test_keys_import_export() {
 /// - Expect:   
 /// - Command:  ./pchain_client keys sign
 #[test]
+#[serial]
 fn test_keys_sign() {
     let env = TestEnv::new();
 
