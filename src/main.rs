@@ -1,5 +1,5 @@
 /*
-    Copyright © 2023, ParallelChain Lab 
+    Copyright © 2023, ParallelChain Lab
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 */
 
@@ -23,7 +23,7 @@ pub mod result;
 /// `setup` defines configuration and file I/O of the program.
 pub mod config;
 
-/// `keypair` defines all utilities required to generate/append to a JSON file, to hold public and private 
+/// `keypair` defines all utilities required to generate/append to a JSON file, to hold public and private
 /// keys to your accounts on ParallelChain.
 pub mod keypair;
 
@@ -35,14 +35,12 @@ pub mod parser;
 
 extern crate argon2;
 use clap::Parser;
-use config::{Config, get_hash_path};
 use command::PChainCLI;
+use config::{get_hash_path, Config};
 
 use crate::sub_commands::{
-    match_submit_subcommand, 
-    match_query_subcommand,
-    match_crypto_subcommand, match_parse_subcommand,
-    match_setup_subcommand
+    match_crypto_subcommand, match_parse_subcommand, match_query_subcommand,
+    match_setup_subcommand, match_submit_subcommand,
 };
 
 #[tokio::main]
@@ -50,8 +48,8 @@ async fn main() {
     let config = Config::load();
 
     let default_hash_file = get_hash_path();
-    if !default_hash_file.exists(){
-        match utils::setup_password(){
+    if !default_hash_file.exists() {
+        match utils::setup_password() {
             Ok(()) => keypair::setup_keypair_file(),
             Err(e) => {
                 println!("{}", e);
@@ -63,23 +61,14 @@ async fn main() {
     let args = PChainCLI::parse();
 
     match args {
-        PChainCLI::Config { config_subcommand } => {
-            match_setup_subcommand(config_subcommand).await
-        },
+        PChainCLI::Config { config_subcommand } => match_setup_subcommand(config_subcommand).await,
         PChainCLI::Transaction { tx_subcommand } => {
             match_submit_subcommand(tx_subcommand, config).await
-        },
-        PChainCLI::Query { query_subcommand } => { 
+        }
+        PChainCLI::Query { query_subcommand } => {
             match_query_subcommand(query_subcommand, config).await
-        },
-        PChainCLI::Keys { crypto_subcommand } => {
-            match_crypto_subcommand(crypto_subcommand)
-        },
-        PChainCLI::Parse { parse_subcommand } => {
-            match_parse_subcommand(parse_subcommand)
-        },
+        }
+        PChainCLI::Keys { crypto_subcommand } => match_crypto_subcommand(crypto_subcommand),
+        PChainCLI::Parse { parse_subcommand } => match_parse_subcommand(parse_subcommand),
     };
 }
-
-
-

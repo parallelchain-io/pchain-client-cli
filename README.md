@@ -218,7 +218,7 @@ pchain_client transaction submit \
 --keypair-name <KEYPAIR_NAME>
 ```
 You will get the following response if the transaction is accepted by your provider:
-```sh
+```json
 {
   "API Response:": "Your Transaction has been received.",
   "Command(s):": [
@@ -298,7 +298,7 @@ When you make a contract call that modify or view state, the contract method may
 
 Example:
 For a contract method that accepts 3 arguments (String, Vec<i16> , boolean)
-```sh
+```json
 {
     "arguments": [
         {"argument_type": "String", "argument_value": "\"Yuru Camp\""},
@@ -322,9 +322,8 @@ Here are some acceptable types and values.
 | `u64`       | The 64-bit unsigned integer type.             | "18446744073709551615"               |
 | `String`    | String                                        | "\\"This is test string\\""          |
 | `bool`      | Boolean                                       | "true" or "false"                    |
-| `Vec<TYPE>` | Array with specific type and arbitrary length | "[65535,6535]" , "[true,false,true]" |
-| `[5]`       | Array with specific length                    | "[1,2,3,4,5]"                        |
 
+***More complicated types can be found in "example/arguments.json"***
 
 ## Versioning
 

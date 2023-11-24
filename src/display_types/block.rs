@@ -1,14 +1,14 @@
 /*
-    Copyright © 2023, ParallelChain Lab 
+    Copyright © 2023, ParallelChain Lab
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 */
 
 //! Data structures which convert pchain_types::Block to a form which can be displayed on the terminal.
 
+use crate::display_types::{QuorumCertificate, Receipt, Transaction};
 use serde::Serialize;
-use crate::display_types::{Transaction, Receipt, QuorumCertificate};
 
-/// [Block] denotes a display_type equivalent of pchain_types::blockchain::Block 
+/// [Block] denotes a display_type equivalent of pchain_types::blockchain::Block
 #[derive(Serialize, Debug)]
 pub struct Block {
     pub header: BlockHeader,
@@ -18,16 +18,22 @@ pub struct Block {
 
 impl From<pchain_types::blockchain::Block> for Block {
     fn from(block: pchain_types::blockchain::Block) -> Block {
-        let txs_beautified: Vec<Transaction> = block.transactions.into_iter().map(
-            From::<pchain_types::blockchain::Transaction>::from
-        ).collect();
-        let receipt_beautified: Vec<Receipt> = block.receipts.into_iter().map(
-            |protocol_type_receipt|
-            protocol_type_receipt.into_iter().map(|p|{
-                From::<pchain_types::blockchain::CommandReceipt>::from(p)
-            }).collect()
-        ).collect();
-        
+        let txs_beautified: Vec<Transaction> = block
+            .transactions
+            .into_iter()
+            .map(From::<pchain_types::blockchain::Transaction>::from)
+            .collect();
+        let receipt_beautified: Vec<Receipt> = block
+            .receipts
+            .into_iter()
+            .map(|protocol_type_receipt| {
+                protocol_type_receipt
+                    .into_iter()
+                    .map(super::CommandReceipt::from)
+                    .collect()
+            })
+            .collect();
+
         Block {
             header: From::<pchain_types::blockchain::BlockHeader>::from(block.header),
             transactions: txs_beautified,
@@ -36,16 +42,16 @@ impl From<pchain_types::blockchain::Block> for Block {
     }
 }
 
-/// [BlockHeader] denotes a display_type equivalent for pchain_types::blockchain::BlockHeader 
+/// [BlockHeader] denotes a display_type equivalent for pchain_types::blockchain::BlockHeader
 #[derive(Serialize, Debug)]
 pub struct BlockHeader {
     pub chain_id: u64,
-    pub block_hash: String, 
+    pub block_hash: String,
     pub height: u64,
     pub justify: QuorumCertificate,
     pub data_hash: String,
     pub timestamp: u32,
-    pub base_fee:u64,
+    pub base_fee: u64,
     pub txs_hash: String,
     pub state_hash: String,
     pub receipts_hash: String,
@@ -69,5 +75,3 @@ impl From<pchain_types::blockchain::BlockHeader> for BlockHeader {
         }
     }
 }
-
-
