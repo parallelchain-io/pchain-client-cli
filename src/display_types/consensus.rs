@@ -1,11 +1,11 @@
 /*
-    Copyright © 2023, ParallelChain Lab 
+    Copyright © 2023, ParallelChain Lab
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 */
 
 //! Data structures which convert data types from hotstuff crate to a format which can be displayed on the terminal.
-use serde::Serialize;
 use crate::command::Base64String;
+use serde::Serialize;
 
 /// [QuorumCertificate] denotes a display_types equivalent of hotstuff_rs_types::QuorumCertificate.
 #[derive(Serialize, Debug)]
@@ -31,10 +31,10 @@ impl From<hotstuff_rs::types::QuorumCertificate> for QuorumCertificate {
 
 #[derive(Serialize, Debug)]
 pub enum Phase {
-    // ↓↓↓ For pipelined flow ↓↓↓ //   
+    // ↓↓↓ For pipelined flow ↓↓↓ //
     Generic,
     // ↓↓↓ For phased flow ↓↓↓ //
-    Prepare, 
+    Prepare,
     // The inner view number is the view number of the *prepare* qc contained in the nudge which triggered the
     // vote containing this phase.
     Precommit(u64),
@@ -61,11 +61,8 @@ pub struct SignatureSet {
 
 impl From<hotstuff_rs::types::SignatureSet> for SignatureSet {
     fn from(sig: hotstuff_rs::types::SignatureSet) -> Self {
-        let signatures: Vec<Option<Base64String>> = sig.iter().map(|s|{
-            s.map(base64url::encode)
-        }).collect();
-        Self {
-            signatures,
-        }
+        let signatures: Vec<Option<Base64String>> =
+            sig.iter().map(|s| s.map(base64url::encode)).collect();
+        Self { signatures }
     }
 }
