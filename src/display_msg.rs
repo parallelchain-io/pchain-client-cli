@@ -4,7 +4,7 @@
 */
 
 use std::{fmt, path::PathBuf};
-use pchain_types::rpc::{SubmitTransactionErrorV1, SubmitTransactionErrorV2};
+use pchain_types::rpc::SubmitTransactionErrorV2;
 
 use crate::command::{Base64Address, Base64Hash, Base64String};
 

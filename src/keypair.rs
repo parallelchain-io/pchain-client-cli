@@ -137,7 +137,6 @@ pub fn generate_keypair(keypair_name: &str) -> KeypairJSON {
     let mut chacha20_rng = ChaCha20Rng::from_rng(&mut osrng).unwrap();
     let keypair = pchain_types::cryptography::Keypair::generate(&mut chacha20_rng);
 
-
     let secret = keypair.as_bytes();
     let verifying = keypair.verifying_key().clone();
     let public = verifying.as_bytes();
@@ -146,7 +145,7 @@ pub fn generate_keypair(keypair_name: &str) -> KeypairJSON {
         name: keypair_name.to_string(),
         private_key: base64url::encode(secret),
         public_key: base64url::encode(public),
-        keypair: base64url::encode(keypair.to_bytes()),
+        keypair: base64url::encode(keypair.to_keypair_bytes()),
     }
 }
 
@@ -159,7 +158,7 @@ pub fn generate_keypair(keypair_name: &str) -> KeypairJSON {
 pub fn add_keypair(
     private_key: &str,
     public_key: &str,
-    name: &str,
+    name: &str
 ) -> Result<KeypairJSON, DisplayMsg> {
     use std::convert::TryFrom;
     let mut sender_public_key = match base64url::decode(&public_key) {

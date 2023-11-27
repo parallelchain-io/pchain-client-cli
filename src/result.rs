@@ -166,8 +166,6 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
                 },
             }
 
-
-
             // let (tx, receipt) = match result {
             //     Ok(TransactionResponseV1 {
             //         transaction: Some(transaction),
@@ -515,7 +513,10 @@ pub fn display_beautified_json_array(response: Vec<(&str, Value)>) {
 // [ClientResponse] defines types that are used by the result module to process
 // different kinds of responses sent by the pchain_client library to the CLI.
 pub enum ClientResponse {
-    SubmitTx(Result<SubmitTransactionResponseV2, ErrorResponse>, pchain_types::rpc::TransactionV1OrV2),
+    SubmitTx(
+        Result<SubmitTransactionResponseV2, ErrorResponse>,
+        pchain_types::rpc::TransactionV1OrV2
+    ),
     Balance(Result<StateResponse, ErrorResponse>),
     Nonce(Result<StateResponse, ErrorResponse>),
     Contract(Result<StateResponse, ErrorResponse>, Option<Destination>),

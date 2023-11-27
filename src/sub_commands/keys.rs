@@ -96,7 +96,6 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
                             std::process::exit(1);
                         }
                     };
-
                     match ed25519_dalek::SigningKey::from_keypair_bytes(&<[u8; 64]>::try_from(&keypair_bs[..]).unwrap()) {
                         Ok(kp) => kp,
                         Err(e) => {

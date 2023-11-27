@@ -28,7 +28,7 @@ impl From<pchain_types::blockchain::CommandReceiptV1> for CommandReceipt {
         let events_beautified: Vec<Event> = receipt
             .logs
             .into_iter()
-            .map(|pchain_types_event| {
+            .map(|pchain_types_event|{
                 From::<pchain_types::blockchain::Log>::from(pchain_types_event)
             })
             .collect();

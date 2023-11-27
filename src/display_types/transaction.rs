@@ -445,12 +445,12 @@ impl From<(
         ),
     ) -> TransactionWithReceipt {
         todo!();
-        TransactionWithReceipt{
-            transaction: From::<pchain_types::blockchain::TransactionV2>::from(tx),
-            receipt: receipt.command_receipts.iter().map(|p|{
-                From::<pchain_types::blockchain::CommandReceiptV2>::from(p.clone())
-            }).collect()
-        }
+        // TransactionWithReceipt{
+        //     transaction: From::<pchain_types::blockchain::TransactionV2>::from(tx),
+        //     receipt: receipt.command_receipts.iter().map(|p|{
+        //         From::<pchain_types::blockchain::CommandReceiptV2>::from(p.clone())
+        //     }).collect()
+        // }
     }
 }
 
