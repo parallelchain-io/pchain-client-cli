@@ -19,6 +19,7 @@ use ed25519_dalek::Signer;
 //  * `crypto_subcommand` - crypto subcommand from CLI
 //
 pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
+    use std::convert::TryFrom;
     match crypto_subcommand {
         Keys::List => {
             match load_existing_keypairs(config::get_keypair_path()) {
@@ -96,7 +97,7 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
                         }
                     };
 
-                    match ed25519_dalek::Keypair::from_bytes(&keypair_bs) {
+                    match ed25519_dalek::SigningKey::from_keypair_bytes(&<[u8; 64]>::try_from(&keypair_bs[..]).unwrap()) {
                         Ok(kp) => kp,
                         Err(e) => {
                             println!("{}", DisplayMsg::InvalidEd25519Keypair(e.to_string()));
@@ -116,8 +117,7 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
 
             let encoded_ciphertext = match base64url::decode(&message) {
                 Ok(serialized_credentials) => {
-                    let ciphertext: ed25519_dalek::Signature =
-                        keypair.sign(&serialized_credentials[..]);
+                    let ciphertext = keypair.sign(&serialized_credentials[..]).to_bytes();
                     base64url::encode(ciphertext)
                 }
                 Err(e) => {

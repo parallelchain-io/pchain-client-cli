@@ -63,6 +63,9 @@ pub enum Transaction {
         #[clap(long = "destination", display_order = 1)]
         destination: Option<String>,
 
+        #[clap(long="v2", display_order=2)]
+        v2: bool,
+
         /// Number of Transactions originating from the Account so far in the ParallelChain network.
         #[clap(long = "nonce", display_order = 1)]
         nonce: u64,

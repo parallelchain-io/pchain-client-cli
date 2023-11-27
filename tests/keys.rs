@@ -1,4 +1,4 @@
-use std::process::Command;
+use std::{process::Command, convert::TryInto};
 
 use common::{TestEnv, expect_output};
 use ed25519_dalek::Signature;
@@ -103,9 +103,13 @@ fn test_keys_import_export() {
     {
         let mut osrng = OsRng{};
         let keypair = Keypair::generate(&mut osrng);
+
+        let verifying = keypair.verifying_key().clone();
+        let public = verifying.as_bytes();
+        let secret = keypair.as_bytes();
         ( 
-            base64url::encode(keypair.public.as_bytes()),
-            base64url::encode(keypair.secret.as_bytes())
+            base64url::encode(public),
+            base64url::encode(secret)
         )
     };
 
@@ -161,8 +165,9 @@ fn test_keys_sign() {
 
     let mut osrng = OsRng{};
     let keypair = Keypair::generate(&mut osrng);
-    let public = base64url::encode(keypair.public.as_bytes());
-    let private = base64url::encode(keypair.secret.as_bytes());
+    let private = base64url::encode(keypair.as_bytes());
+    let verifying = keypair.verifying_key().clone();
+    let public = base64url::encode(verifying.as_bytes());
 
     let output = Command::new(&env.bin)
         .arg("keys")
@@ -200,6 +205,6 @@ fn test_keys_sign() {
     .unwrap();
 
     let ciphertext = output.split(' ').last().unwrap().trim();
-    let signature = Signature::from_bytes(&base64url::decode(ciphertext).unwrap()).unwrap();
+    let signature = Signature::from_bytes(&base64url::decode(ciphertext).unwrap().try_into().unwrap());
     assert!(keypair.verify(&[1u8, 2, 3, 4], &signature).is_ok());
 }

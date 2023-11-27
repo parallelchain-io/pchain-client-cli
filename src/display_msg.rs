@@ -3,8 +3,8 @@
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 */
 
-use pchain_types::rpc::SubmitTransactionError;
 use std::{fmt, path::PathBuf};
+use pchain_types::rpc::{SubmitTransactionErrorV1, SubmitTransactionErrorV2};
 
 use crate::command::{Base64Address, Base64Hash, Base64String};
 
@@ -56,7 +56,7 @@ pub enum DisplayMsg {
     // Transaction Msg //
     /////////////////////
     SuccessSubmitTx,
-    FailSubmitTx(SubmitTransactionError),
+    FailSubmitTx(SubmitTransactionErrorV2),
     FailToParseCallArguments(ErrorMsg),
     FailToParseCallResult(ErrorMsg),
     InvalidTxCommand(ErrorMsg),
@@ -186,10 +186,11 @@ impl fmt::Display for DisplayMsg {
                 write!(f, "Transaction is submitted to ParallelChain but not completely get through yet. Check explorer or wallet for updated status."),
             DisplayMsg::FailSubmitTx(error) => {
                 match error {
-                    SubmitTransactionError::MempoolFull => write!(f, "Error: Submit Transation Fail. Mempool is full."),
-                    SubmitTransactionError::UnacceptableNonce => write!(f, "Error: Submit Transation Fail. Nonce is not within acceptable range."),
-                    SubmitTransactionError::Other => write!(f, "Error: Submit Transation Fail. Please ensure gas limit, base fee or transaction size is within range."),
-                }
+                    SubmitTransactionErrorV2::NonceLTCommitted => write!(f, "Error: Submit Transation Fail. Nonce is lower than the committed nonce."),
+                    SubmitTransactionErrorV2::BaseFeePerGasTooLow => write!(f, "Error: Submit Transation Fail. Base fee is too low."),
+                    SubmitTransactionErrorV2::MempoolIsFull => write!(f, "Error: Submit Transation Fail. Mempool is full."),
+                    SubmitTransactionErrorV2::Other => write!(f, "Error: Submit Transation Fail. Please ensure gas limit or transaction size is within range."),
+                    }
             },
             DisplayMsg::FailToParseCallArguments(e) =>
                 write!(f, "Error: Cannot parse contract call arguments of the transaction. {}", e),

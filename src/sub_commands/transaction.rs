@@ -5,7 +5,7 @@
 
 //! Methods related to subcommand `submit` in `pchain-client`.
 
-use pchain_client::Client;
+use pchain_client::{ClientV1, ClientV2};
 use serde_json::Value;
 use std::path::PathBuf;
 
@@ -27,7 +27,8 @@ use crate::utils::read_file_to_utf8string;
 //
 pub async fn match_submit_subcommand(tx_subcommand: Transaction, config: Config) {
     let url = config.get_url();
-    let pchain_client = Client::new(url);
+    let pchain_client_v1 = ClientV1::new(url);
+    let pchain_client_v2 = ClientV2::new(url);
 
     match tx_subcommand {
         Transaction::Submit { file, keypair_name } => {
@@ -44,24 +45,28 @@ pub async fn match_submit_subcommand(tx_subcommand: Transaction, config: Config)
                 Err(e) => {
                     println!("{}", e);
                     std::process::exit(1);
-                }
-            };
-
-            let response = pchain_client.submit_transaction(&signed_tx).await;
-
+                },
+            };        
+        
+            let response = pchain_client_v2
+                .submit_transaction(&signed_tx)
+                .await;
+            
             display_beautified_rpc_result(ClientResponse::SubmitTx(response, signed_tx))
         }
         Transaction::Create {
             destination,
-            priority_fee_per_gas,
-            gas_limit,
-            max_base_fee_per_gas,
-            nonce,
-            create_tx_subcommand,
+            v2,
+            priority_fee_per_gas, 
+            gas_limit, 
+            max_base_fee_per_gas, 
+            nonce, 
+            create_tx_subcommand
         } => {
             let command = subcommand_parser(create_tx_subcommand);
 
-            let tx = SubmitTx {
+            let tx = SubmitTx{
+                v2,
                 commands: vec![command],
                 nonce,
                 gas_limit,

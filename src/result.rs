@@ -36,37 +36,48 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
                             let mut tx = Vec::new();
 
                             // if transaction contains `Deploy` command, print the contract address to console
-                            if signed_tx.commands.iter().any(|command| {
-                                matches!(command, pchain_types::blockchain::Command::Deploy(_))
-                            }) {
-                                let contract_address = base64url::encode(
-                                    pchain_types::cryptography::contract_address(
-                                        &signed_tx.signer,
-                                        signed_tx.nonce,
-                                    ),
-                                );
-                                tx.push((
-                                    "Contract Address:",
-                                    serde_json::to_value(contract_address).unwrap(),
-                                ));
-                            }
-                            let tx_print: Transaction =
-                                From::<pchain_types::blockchain::Transaction>::from(signed_tx);
-                            tx.push((
-                                "Response:",
-                                serde_json::to_value(DisplayMsg::SuccessSubmitTx.to_string())
-                                    .unwrap(),
-                            ));
-                            tx.push(("Command(s):", serde_json::Value::Array(tx_print.commands)));
-                            tx.push((
-                                "Transaction Hash:",
-                                serde_json::to_value(tx_print.hash).unwrap(),
-                            ));
-                            tx.push((
-                                "Signature:",
-                                serde_json::to_value(tx_print.signature).unwrap(),
-                            ));
-                            display_beautified_json(tx);
+                            match signed_tx {
+                                TransactionV1OrV2::V1(txn) => {
+                                    if txn.commands.iter().any(|command| match command {
+                                        pchain_types::blockchain::Command::Deploy(_) => true,
+                                        _ => false,
+                                    }) {
+                                        let contract_address = base64url::encode(
+                                            pchain_types::cryptography::contract_address_v1(&txn.signer, txn.nonce)
+                                        );
+                                        tx.push(("Contract Address: ", serde_json::to_value(contract_address).unwrap()));
+                                    }
+
+                                    let tx_print: Transaction = From::<pchain_types::blockchain::TransactionV1>::from(txn);
+                                    tx.push(("Response: ", serde_json::to_value(DisplayMsg::SuccessSubmitTx.to_string()).unwrap()));
+                                    tx.push(("Command(s): ", serde_json::Value::Array(tx_print.commands)));
+                                    tx.push(("Transaction Hash: ", serde_json::to_value(tx_print.hash).unwrap()));
+                                    tx.push(("Signature: ", serde_json::to_value(tx_print.signature).unwrap()));
+                                    display_beautified_json(tx);
+                                },
+                                TransactionV1OrV2::V2(txn) => {
+
+                                    for (index, command) in txn.commands.iter().enumerate() {
+                                        match command {
+                                            pchain_types::blockchain::Command::Deploy(_) => {
+                                                let contract_address = base64url::encode(
+                                                    pchain_types::cryptography::contract_address_v2(&txn.signer, txn.nonce, index as u32)
+                                                );
+                                                tx.push(("Contract Address: ", serde_json::to_value(contract_address).unwrap()));
+                                            },
+                                            _ => {}
+                                        }
+                                    }
+                                        
+                                    let tx_print: Transaction = From::<pchain_types::blockchain::TransactionV2>::from(txn);
+                                    tx.push(("Response: ", serde_json::to_value(DisplayMsg::SuccessSubmitTx.to_string()).unwrap()));
+                                    tx.push(("Command(s): ", serde_json::Value::Array(tx_print.commands)));
+                                    tx.push(("Transaction Hash: ", serde_json::to_value(tx_print.hash).unwrap()));
+                                    tx.push(("Signature: ", serde_json::to_value(tx_print.signature).unwrap()));
+                                    display_beautified_json(tx);
+
+                                },
+                            };
                         }
                     }
                 }
@@ -77,8 +88,8 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
             }
         }
         ClientResponse::Block(result) => {
-            let block: pchain_types::blockchain::Block = match result {
-                Ok(BlockResponse { block: Some(b) }) => b,
+            let block: pchain_types::blockchain::BlockV1 = match result {
+                Ok(BlockResponseV1 { block: Some(b) }) => b,
                 Err(e) => {
                     println!("{}", DisplayMsg::RespnoseWithHTTPError(e));
                     std::process::exit(1);
@@ -88,13 +99,13 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
                     std::process::exit(1);
                 }
             };
-            let block_print: Block = From::<pchain_types::blockchain::Block>::from(block);
+            let block_print: Block = From::<pchain_types::blockchain::BlockV1>::from(block);
 
             println!("{:#}", serde_json::to_value(block_print).unwrap())
         }
         ClientResponse::BlockHeader(result) => {
-            let block_header: pchain_types::blockchain::BlockHeader = match result {
-                Ok(BlockHeaderResponse {
+            let block_header: pchain_types::blockchain::BlockHeaderV1 = match result {
+                Ok(BlockHeaderResponseV1 {
                     block_header: Some(bh),
                 }) => bh,
                 Err(e) => {
@@ -107,41 +118,84 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
                 }
             };
             let header_print: BlockHeader =
-                From::<pchain_types::blockchain::BlockHeader>::from(block_header);
+                From::<pchain_types::blockchain::BlockHeaderV1>::from(block_header);
 
             println!("{:#}", serde_json::to_value(header_print).unwrap())
         }
         ClientResponse::Transaction(result) => {
-            let (tx, receipt) = match result {
-                Ok(TransactionResponse {
-                    transaction: Some(transaction),
-                    receipt,
-                    block_hash: _,
-                    position: _,
-                }) => (transaction, receipt.map_or(Vec::new(), |r| r)),
-                Err(e) => {
+
+            match result {
+                Ok(TransactionResponseV2{transaction: Some(transaction), receipt, block_hash: _, position: _}) => {
+
+                    match transaction {
+                        TransactionV1ToV2::V1(txn) => {
+                            match receipt {
+                                Some(ReceiptV1ToV2::V1(receipt)) => {
+                                    let tx_print: TransactionWithReceipt = From::<(pchain_types::blockchain::TransactionV1, pchain_types::blockchain::ReceiptV1)>::from((txn, receipt));
+                                    println!("{:#}", serde_json::to_value(tx_print).unwrap())     
+                                }, 
+                                None => {
+                                    let tx_print: Transaction = From::<pchain_types::blockchain::TransactionV1>::from(txn);
+                                    println!("{:#}", serde_json::to_value(tx_print).unwrap())
+                                },
+                                _ => todo!()
+                            }
+                        },
+                        TransactionV1ToV2::V2(txn) => {
+                            match receipt {
+                                Some(ReceiptV1ToV2::V2(receipt)) => {
+                                    let tx_print: TransactionWithReceipt = From::<(pchain_types::blockchain::TransactionV2, pchain_types::blockchain::ReceiptV2)>::from((txn, receipt));
+                                    println!("{:#}", serde_json::to_value(tx_print).unwrap())
+                                },
+                                None => {
+                                    let tx_print: Transaction = From::<pchain_types::blockchain::TransactionV2>::from(txn);
+                                    println!("{:#}", serde_json::to_value(tx_print).unwrap())
+                                },
+                                _ => todo!(),
+                            }
+                        },
+                    }
+                },
+                Err(e) => { 
                     println!("{}", DisplayMsg::RespnoseWithHTTPError(e));
                     std::process::exit(1);
-                }
+                },
                 _ => {
                     println!("{}", DisplayMsg::CannotFindRelevantTransaction);
                     std::process::exit(1);
-                }
-            };
-            if receipt.is_empty() {
-                let tx_print: Transaction = From::<pchain_types::blockchain::Transaction>::from(tx);
-                println!("{:#}", serde_json::to_value(tx_print).unwrap())
-            } else {
-                let tx_print: TransactionWithReceipt = From::<(
-                    pchain_types::blockchain::Transaction,
-                    pchain_types::blockchain::Receipt,
-                )>::from((tx, receipt));
-                println!("{:#}", serde_json::to_value(tx_print).unwrap())
-            };
-        }
+                },
+            }
+
+
+
+            // let (tx, receipt) = match result {
+            //     Ok(TransactionResponseV1 {
+            //         transaction: Some(transaction),
+            //         receipt,
+            //         block_hash: _,
+            //         position: _,
+            //     }) => (transaction, receipt.map_or(Vec::new(), |r| r)),
+            //     Err(e) => {
+            //         println!("{}", DisplayMsg::RespnoseWithHTTPError(e));
+            //         std::process::exit(1);
+            //     }
+            //     _ => {
+            //         println!("{}", DisplayMsg::CannotFindRelevantTransaction);
+            //         std::process::exit(1);
+            //     }
+            // };
+            // if receipt.is_empty() {
+            //     let tx_print: Transaction = From::<pchain_types::blockchain::TransactionV1>::from(tx);
+            //     println!("{:#}", serde_json::to_value(tx_print).unwrap())
+            // } else {
+            //     let tx_print: TransactionWithReceipt = From::<(pchain_types::blockchain::TransactionV1, pchain_types::blockchain::ReceiptV1)>::from((tx, receipt));
+            //     println!("{:#}", serde_json::to_value(tx_print).unwrap())              
+            // };
+
+        },
         ClientResponse::Receipt(result) => {
-            let receipt: pchain_types::blockchain::Receipt = match result {
-                Ok(ReceiptResponse {
+            let receipt: pchain_types::blockchain::ReceiptV1 = match result {
+                Ok(ReceiptResponseV1 {
                     transaction_hash: _,
                     receipt: Some(receipt),
                     block_hash: _,
@@ -402,15 +456,23 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
             }
         }
         ClientResponse::View(result) => {
-            let receipt: pchain_types::blockchain::CommandReceipt = match result {
-                Ok(ViewResponse { receipt }) => receipt,
+
+            let receipt_print: CommandReceipt = match result {
+                Ok(ViewResponseV2 { command_receipt }) => {
+                    match command_receipt {
+                        CommandReceiptV1ToV2::V1(r) => {
+                            From::<pchain_types::blockchain::CommandReceiptV1>::from(r)
+                        },
+                        CommandReceiptV1ToV2::V2(r) => {
+                            todo!("cast this to CommandReceipt");
+                        },
+                    }
+                },
                 Err(e) => {
                     println!("{}", DisplayMsg::RespnoseWithHTTPError(e));
                     std::process::exit(1);
                 }
             };
-            let receipt_print: CommandReceipt =
-                From::<pchain_types::blockchain::CommandReceipt>::from(receipt);
             println!("{:#}", serde_json::to_value(receipt_print).unwrap())
         }
     }
@@ -453,17 +515,14 @@ pub fn display_beautified_json_array(response: Vec<(&str, Value)>) {
 // [ClientResponse] defines types that are used by the result module to process
 // different kinds of responses sent by the pchain_client library to the CLI.
 pub enum ClientResponse {
-    SubmitTx(
-        Result<SubmitTransactionResponse, ErrorResponse>,
-        pchain_types::blockchain::Transaction,
-    ),
+    SubmitTx(Result<SubmitTransactionResponseV2, ErrorResponse>, pchain_types::rpc::TransactionV1OrV2),
     Balance(Result<StateResponse, ErrorResponse>),
     Nonce(Result<StateResponse, ErrorResponse>),
     Contract(Result<StateResponse, ErrorResponse>, Option<Destination>),
-    Block(Result<BlockResponse, ErrorResponse>),
-    BlockHeader(Result<BlockHeaderResponse, ErrorResponse>),
-    Transaction(Result<TransactionResponse, ErrorResponse>),
-    Receipt(Result<ReceiptResponse, ErrorResponse>),
+    Block(Result<BlockResponseV1, ErrorResponse>),
+    BlockHeader(Result<BlockHeaderResponseV1, ErrorResponse>),
+    Transaction(Result<TransactionResponseV2, ErrorResponse>),
+    Receipt(Result<ReceiptResponseV1, ErrorResponse>),
     State(Result<StateResponse, ErrorResponse>),
     PreviousValidatorSet(Result<ValidatorSetsResponse, ErrorResponse>),
     CurrentValidatorSet(Result<ValidatorSetsResponse, ErrorResponse>),
@@ -471,7 +530,7 @@ pub enum ClientResponse {
     Pool(Result<PoolsResponse, ErrorResponse>),
     Deposit(Result<DepositsResponse, ErrorResponse>),
     StakePower(Result<StakesResponse, ErrorResponse>),
-    View(Result<ViewResponse, ErrorResponse>),
+    View(Result<ViewResponseV2, ErrorResponse>),
 }
 
 type ErrorResponse = String;

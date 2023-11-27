@@ -131,7 +131,7 @@ pub fn match_parse_subcommand(parse_subcommand: Parse) {
             match base64url_to_public_address(&address) {
                 Ok(sender_address) => println!(
                     "Contract Address: {}",
-                    base64url::encode(pchain_types::cryptography::contract_address(
+                    base64url::encode(pchain_types::cryptography::contract_address_v1(
                         &sender_address,
                         nonce
                     ))
