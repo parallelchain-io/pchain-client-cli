@@ -5,7 +5,7 @@
 
 //! Data structures which convert pchain_types::Block to a form which can be displayed on the terminal.
 
-use crate::display_types::{QuorumCertificate, Receipt, Transaction};
+use crate::display_types::{QuorumCertificate, Receipt2, Transaction};
 use serde::Serialize;
 
 /// [Block] denotes a display_type equivalent of pchain_types::blockchain::Block
@@ -13,7 +13,7 @@ use serde::Serialize;
 pub struct Block {
     pub header: BlockHeader,
     pub transactions: Vec<Transaction>,
-    pub receipts: Vec<Receipt>,
+    pub receipts: Vec<Vec<Receipt2>>,
 }
 
 impl From<pchain_types::blockchain::BlockV1> for Block {
@@ -23,19 +23,46 @@ impl From<pchain_types::blockchain::BlockV1> for Block {
             .into_iter()
             .map(From::<pchain_types::blockchain::TransactionV1>::from)
             .collect();
-        let receipt_beautified: Vec<Receipt> = block
+        let receipt_beautified: Vec<Vec<Receipt2>> = block
             .receipts
             .into_iter()
             .map(|protocol_type_receipt| {
                 protocol_type_receipt
                     .into_iter()
-                    .map(super::CommandReceipt::from)
+                    .map(Receipt2::from)
                     .collect()
             })
             .collect();
 
         Block {
             header: From::<pchain_types::blockchain::BlockHeaderV1>::from(block.header),
+            transactions: txs_beautified,
+            receipts: receipt_beautified,
+        }
+    }
+}
+
+impl From<pchain_types::blockchain::BlockV2> for Block {
+    fn from(block: pchain_types::blockchain::BlockV2) -> Block {
+        let txs_beautified: Vec<Transaction> = block
+            .transactions
+            .into_iter()
+            .map(From::<pchain_types::blockchain::TransactionV2>::from)
+            .collect();
+        let receipt_beautified: Vec<Vec<Receipt2>> = block
+            .receipts
+            .into_iter()
+            .map(|protocol_type_receipt| {
+                protocol_type_receipt
+                    .command_receipts
+                    .into_iter()
+                    .map(super::Receipt2::from)
+                    .collect()
+            })
+            .collect();
+
+        Block {
+            header: From::<pchain_types::blockchain::BlockHeaderV2>::from(block.header),
             transactions: txs_beautified,
             receipts: receipt_beautified,
         }
@@ -60,6 +87,23 @@ pub struct BlockHeader {
 
 impl From<pchain_types::blockchain::BlockHeaderV1> for BlockHeader {
     fn from(blockheader: pchain_types::blockchain::BlockHeaderV1) -> BlockHeader {
+        BlockHeader {
+            chain_id: blockheader.chain_id,
+            height: blockheader.height,
+            timestamp: blockheader.timestamp,
+            base_fee: blockheader.base_fee_per_gas,
+            justify: From::<hotstuff_rs::types::QuorumCertificate>::from(blockheader.justify),
+            data_hash: base64url::encode(blockheader.data_hash),
+            block_hash: base64url::encode(blockheader.hash),
+            txs_hash: base64url::encode(blockheader.hash),
+            state_hash: base64url::encode(blockheader.state_hash),
+            receipts_hash: base64url::encode(blockheader.receipts_hash),
+            proposer: base64url::encode(blockheader.proposer),
+        }
+    }
+}
+impl From<pchain_types::blockchain::BlockHeaderV2> for BlockHeader {
+    fn from(blockheader: pchain_types::blockchain::BlockHeaderV2) -> BlockHeader {
         BlockHeader {
             chain_id: blockheader.chain_id,
             height: blockheader.height,

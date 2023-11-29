@@ -6,6 +6,7 @@
 //! Data structures which convert pchain_types::Transaction to a format which can be displayed on the terminal.
 
 use dunce;
+use pchain_types::cryptography::SignatureBytes;
 use pchain_types::{blockchain::Command, runtime::*};
 use serde::Serialize;
 use serde_json::json;
@@ -17,9 +18,11 @@ use std::path::{Path, PathBuf};
 use crate::command::Base64String;
 use crate::config::get_keypair_path;
 use crate::display_msg::DisplayMsg;
-use crate::display_types::{Event, Receipt, TxCommand};
+use crate::display_types::{Event, TxCommand};
 use crate::keypair::get_keypair_from_json;
 use crate::utils::{read_file, read_file_to_utf8string};
+
+use super::Receipt2;
 
 /// [Transaction] denotes a display_types equivalent of pchain_types::blockchain::Transaction.
 #[derive(Serialize, Debug)]
@@ -172,6 +175,7 @@ fn commands_to_json(commands: Vec<Command>) -> Vec<Value> {
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct SubmitTx {
+    pub v1: bool,
     pub v2: bool,
     pub commands: Vec<TxCommand>,
     pub nonce: u64,
@@ -302,7 +306,8 @@ impl SubmitTx {
                 ));
             }
         };
-        let keypair = match ed25519_dalek::SigningKey::from_keypair_bytes(&<[u8; 64]>::try_from(&keypair_bs[..]).unwrap()) {
+
+        let keypair = match ed25519_dalek::SigningKey::from_keypair_bytes(&SignatureBytes::try_from(keypair_bs).unwrap()) {
             Ok(kp) => kp,
             Err(e) => {
                 println!("{}", DisplayMsg::InvalidEd25519Keypair(e.to_string()));
@@ -318,19 +323,8 @@ impl SubmitTx {
             }
         }
 
-        let transaction = if self.v2 {
-            pchain_types::rpc::TransactionV1OrV2::V2(
-                pchain_types::blockchain::TransactionV2::new(
-                    &keypair, 
-                    self.nonce, 
-                    commands,
-                    self.gas_limit,
-                    self.max_base_fee_per_gas,
-                    self.priority_fee_per_gas,
-                )
-            )
-        } else {
-            pchain_types::rpc::TransactionV1OrV2::V1(
+        if self.v1 {
+            return Ok(pchain_types::rpc::TransactionV1OrV2::V1(
                 pchain_types::blockchain::TransactionV1::new(
                 &keypair,
                 self.nonce,
@@ -339,10 +333,21 @@ impl SubmitTx {
                 self.max_base_fee_per_gas, 
                 self.priority_fee_per_gas,
                 )
-            )
-        };
-
-        Ok(transaction)
+            ))
+        } else if self.v2 {
+            return Ok(pchain_types::rpc::TransactionV1OrV2::V2(
+                pchain_types::blockchain::TransactionV2::new(
+                    &keypair, 
+                    self.nonce, 
+                    commands,
+                    self.gas_limit,
+                    self.max_base_fee_per_gas,
+                    self.priority_fee_per_gas,
+                )
+            ))
+        } {
+            todo!("some kind of error ")
+        }
 
     }
    
@@ -409,7 +414,7 @@ pub fn read_contract_code(path: &str) -> Result<Vec<u8>, DisplayMsg> {
 #[derive(Serialize, Debug)]
 pub struct TransactionWithReceipt {
     pub transaction: Transaction,
-    pub receipt: Receipt,
+    pub receipt: Vec<Receipt2>,
 }
 
 impl From<(
@@ -423,16 +428,19 @@ impl From<(
             pchain_types::blockchain::ReceiptV1,
         ),
     ) -> TransactionWithReceipt {
+
+        let receipt: Vec<Receipt2> = receipt.iter().map(|command_receipt| {
+            From::<pchain_types::blockchain::CommandReceiptV1>::from(command_receipt.clone())
+        }).collect();
+
         TransactionWithReceipt{
             transaction: From::<pchain_types::blockchain::TransactionV1>::from(tx),
-            receipt: receipt.iter().map(|p|{
-                From::<pchain_types::blockchain::CommandReceiptV1>::from(p.clone())
-            }).collect()
+            receipt,
         }
     }
 }
 
-// todo!() - different way because different receipt structure
+
 impl From<(
     pchain_types::blockchain::TransactionV2,
     pchain_types::blockchain::ReceiptV2
@@ -444,13 +452,15 @@ impl From<(
             pchain_types::blockchain::ReceiptV2,
         ),
     ) -> TransactionWithReceipt {
-        todo!();
-        // TransactionWithReceipt{
-        //     transaction: From::<pchain_types::blockchain::TransactionV2>::from(tx),
-        //     receipt: receipt.command_receipts.iter().map(|p|{
-        //         From::<pchain_types::blockchain::CommandReceiptV2>::from(p.clone())
-        //     }).collect()
-        // }
+
+        let receipt: Vec<Receipt2> = receipt.command_receipts.iter().map(|command_receipt| {
+            From::<pchain_types::blockchain::CommandReceiptV2>::from(command_receipt.clone())
+        }).collect();
+
+        TransactionWithReceipt{
+            transaction: From::<pchain_types::blockchain::TransactionV2>::from(tx),
+            receipt,
+        }
     }
 }
 

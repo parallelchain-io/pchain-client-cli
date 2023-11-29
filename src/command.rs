@@ -63,6 +63,9 @@ pub enum Transaction {
         #[clap(long = "destination", display_order = 1)]
         destination: Option<String>,
 
+        #[clap(long="v1", display_order=2)]
+        v1: bool,
+
         #[clap(long="v2", display_order=2)]
         v2: bool,
 

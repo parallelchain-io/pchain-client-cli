@@ -7,7 +7,7 @@
 
 use std::collections::{HashSet, HashMap};
 use std::path::PathBuf;
-use pchain_client::{ClientV1, ClientV2};
+use pchain_client::ClientV2;
 use pchain_types::rpc::*;
 use serde_json::Value;
 
@@ -26,7 +26,6 @@ use crate::utils::read_file_to_utf8string;
 //
 pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
     let url = config.get_url();
-    let pchain_client_v1 = ClientV1::new(url);
     let pchain_client_v2 = ClientV2::new(url);
 
     match query_subcommand {
@@ -142,7 +141,7 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
             }
 
             if latest {
-                let response = pchain_client_v1.highest_committed_block().await;
+                let response = pchain_client_v2.highest_committed_block().await;
 
                 let block_hash = match response {
                     Ok(HighestCommittedBlockResponse {
@@ -165,20 +164,20 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                         tx_hash: _,
                         latest: _,
                     } => {
-                        let response = pchain_client_v1
+                        let response = pchain_client_v2
                             .block_header(&BlockHeaderRequest { block_hash })
                             .await;
 
                         display_beautified_rpc_result(ClientResponse::BlockHeader(response));
                     }
                     _ => {
-                        let response = pchain_client_v1.block(&BlockRequest { block_hash }).await;
+                        let response = pchain_client_v2.block(&BlockRequest { block_hash }).await;
 
                         display_beautified_rpc_result(ClientResponse::Block(response));
                     }
                 };
             } else if let Some(block_height) = block_height {
-                let response = pchain_client_v1
+                let response = pchain_client_v2
                     .block_hash_by_height(&BlockHashByHeightRequest { block_height })
                     .await;
 
@@ -204,14 +203,14 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                         tx_hash: _,
                         latest: _,
                     } => {
-                        let response = pchain_client_v1
+                        let response = pchain_client_v2
                             .block_header(&BlockHeaderRequest { block_hash })
                             .await;
 
                         display_beautified_rpc_result(ClientResponse::BlockHeader(response));
                     }
                     _ => {
-                        let response = pchain_client_v1.block(&BlockRequest { block_hash }).await;
+                        let response = pchain_client_v2.block(&BlockRequest { block_hash }).await;
 
                         display_beautified_rpc_result(ClientResponse::Block(response));
                     }
@@ -240,14 +239,14 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                         tx_hash: _,
                         latest: _,
                     } => {
-                        let response = pchain_client_v1
+                        let response = pchain_client_v2
                             .block_header(&BlockHeaderRequest { block_hash })
                             .await;
 
                         display_beautified_rpc_result(ClientResponse::BlockHeader(response));
                     }
                     _ => {
-                        let response = pchain_client_v1.block(&BlockRequest { block_hash }).await;
+                        let response = pchain_client_v2.block(&BlockRequest { block_hash }).await;
 
                         display_beautified_rpc_result(ClientResponse::Block(response));
                     }
@@ -269,7 +268,7 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                         }
                     };
 
-                let response = pchain_client_v1
+                let response = pchain_client_v2
                     .transaction_position(&TransactionPositionRequest { transaction_hash })
                     .await;
 
@@ -296,14 +295,14 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                         tx_hash: _,
                         latest: _,
                     } => {
-                        let response = pchain_client_v1
+                        let response = pchain_client_v2
                             .block_header(&BlockHeaderRequest { block_hash })
                             .await;
 
                         display_beautified_rpc_result(ClientResponse::BlockHeader(response));
                     }
                     _ => {
-                        let response = pchain_client_v1.block(&BlockRequest { block_hash }).await;
+                        let response = pchain_client_v2.block(&BlockRequest { block_hash }).await;
 
                         display_beautified_rpc_result(ClientResponse::Block(response));
                     }
@@ -326,6 +325,7 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                         std::process::exit(1);
                     }
                 };
+            println!("tx hash : {:?}", tx_hash);
 
             let response = pchain_client_v2
                 .transaction(&TransactionRequest {
@@ -333,6 +333,7 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                     include_receipt: true,
                 })
                 .await;
+            println!("response: {:?}", response);
 
             display_beautified_rpc_result(ClientResponse::Transaction(response));
         }
@@ -353,7 +354,7 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                     }
                 };
 
-            let response = pchain_client_v1
+            let response = pchain_client_v2
                 .receipt(&ReceiptRequest {
                     transaction_hash: tx_hash,
                 })

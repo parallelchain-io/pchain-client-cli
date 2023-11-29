@@ -5,7 +5,7 @@
 
 //! Methods related to subcommand `submit` in `pchain-client`.
 
-use pchain_client::{ClientV1, ClientV2};
+use pchain_client::ClientV2;
 use serde_json::Value;
 use std::path::PathBuf;
 
@@ -27,7 +27,6 @@ use crate::utils::read_file_to_utf8string;
 //
 pub async fn match_submit_subcommand(tx_subcommand: Transaction, config: Config) {
     let url = config.get_url();
-    let pchain_client_v1 = ClientV1::new(url);
     let pchain_client_v2 = ClientV2::new(url);
 
     match tx_subcommand {
@@ -39,6 +38,7 @@ pub async fn match_submit_subcommand(tx_subcommand: Transaction, config: Config)
                     std::process::exit(1);
                 }
             };
+            println!("submit tx: {:?}\n", submit_tx);
 
             let signed_tx = match submit_tx.prepare_signed_tx(&keypair_name) {
                 Ok(tx) => tx,
@@ -46,7 +46,8 @@ pub async fn match_submit_subcommand(tx_subcommand: Transaction, config: Config)
                     println!("{}", e);
                     std::process::exit(1);
                 },
-            };        
+            };
+            println!("signed tx: {:?}", signed_tx);
         
             let response = pchain_client_v2
                 .submit_transaction(&signed_tx)
@@ -56,6 +57,7 @@ pub async fn match_submit_subcommand(tx_subcommand: Transaction, config: Config)
         }
         Transaction::Create {
             destination,
+            v1,
             v2,
             priority_fee_per_gas, 
             gas_limit, 
@@ -66,6 +68,7 @@ pub async fn match_submit_subcommand(tx_subcommand: Transaction, config: Config)
             let command = subcommand_parser(create_tx_subcommand);
 
             let tx = SubmitTx{
+                v1,
                 v2,
                 commands: vec![command],
                 nonce,

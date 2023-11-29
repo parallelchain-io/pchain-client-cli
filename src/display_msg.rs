@@ -189,7 +189,7 @@ impl fmt::Display for DisplayMsg {
                     SubmitTransactionErrorV2::NonceLTCommitted => write!(f, "Error: Submit Transation Fail. Nonce is lower than the committed nonce."),
                     SubmitTransactionErrorV2::BaseFeePerGasTooLow => write!(f, "Error: Submit Transation Fail. Base fee is too low."),
                     SubmitTransactionErrorV2::MempoolIsFull => write!(f, "Error: Submit Transation Fail. Mempool is full."),
-                    SubmitTransactionErrorV2::Other => write!(f, "Error: Submit Transation Fail. Please ensure gas limit or transaction size is within range."),
+                    SubmitTransactionErrorV2::Other => write!(f, "Error: Submit Transation Fail. Please ensure gas limit, nonce, or transaction size is within range."),
                     }
             },
             DisplayMsg::FailToParseCallArguments(e) =>
