@@ -5,11 +5,11 @@
 
 //! Methods related to subcommand `query` in `pchain-client`.
 
-use std::collections::{HashSet, HashMap};
-use std::path::PathBuf;
 use pchain_client::ClientV2;
 use pchain_types::rpc::*;
 use serde_json::Value;
+use std::collections::{HashMap, HashSet};
+use std::path::PathBuf;
 
 use crate::command::{Query, Validators};
 use crate::config::Config;
@@ -29,22 +29,30 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
     let pchain_client_v2 = ClientV2::new(url);
 
     match query_subcommand {
-        Query::Balance{address} => {
-            let sender_address: pchain_types::cryptography::PublicAddress = match base64url_to_public_address(&address) {
-                Ok(addr) => addr,
-                Err(e) => {
-                    println!("{}", DisplayMsg::FailToDecodeBase64Address(String::from("sender"), address, e.to_string()));
-                    std::process::exit(1);
-                }
-            };
-            
+        Query::Balance { address } => {
+            let sender_address: pchain_types::cryptography::PublicAddress =
+                match base64url_to_public_address(&address) {
+                    Ok(addr) => addr,
+                    Err(e) => {
+                        println!(
+                            "{}",
+                            DisplayMsg::FailToDecodeBase64Address(
+                                String::from("sender"),
+                                address,
+                                e.to_string()
+                            )
+                        );
+                        std::process::exit(1);
+                    }
+                };
+
             let response = pchain_client_v2
-                            .state(&StateRequest {
-                                accounts: HashSet::from([sender_address]),
-                                include_contract: false,
-                                storage_keys: HashMap::from([])
-                            })
-                            .await;
+                .state(&StateRequest {
+                    accounts: HashSet::from([sender_address]),
+                    include_contract: false,
+                    storage_keys: HashMap::from([]),
+                })
+                .await;
 
             display_beautified_rpc_result(ClientResponse::Balance(response));
         }
@@ -66,12 +74,12 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                 };
 
             let response = pchain_client_v2
-                            .state(&StateRequest {
-                                accounts: HashSet::from([sender_address]),
-                                include_contract: false,
-                                storage_keys: HashMap::from([])
-                            })
-                            .await;
+                .state(&StateRequest {
+                    accounts: HashSet::from([sender_address]),
+                    include_contract: false,
+                    storage_keys: HashMap::from([]),
+                })
+                .await;
 
             display_beautified_rpc_result(ClientResponse::Nonce(response));
         }
@@ -325,7 +333,6 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                         std::process::exit(1);
                     }
                 };
-            println!("tx hash : {:?}", tx_hash);
 
             let response = pchain_client_v2
                 .transaction(&TransactionRequest {
@@ -333,7 +340,6 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                     include_receipt: true,
                 })
                 .await;
-            println!("response: {:?}", response);
 
             display_beautified_rpc_result(ClientResponse::Transaction(response));
         }

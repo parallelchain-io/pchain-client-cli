@@ -5,7 +5,7 @@
 
 //! Data structures which convert pchain_types::Block to a form which can be displayed on the terminal.
 
-use crate::display_types::{QuorumCertificate, CommandReceipt, Transaction};
+use crate::display_types::{CommandReceipt, QuorumCertificate, Transaction};
 use serde::Serialize;
 
 use super::Receipt;

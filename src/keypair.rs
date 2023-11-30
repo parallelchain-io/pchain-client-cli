@@ -159,7 +159,7 @@ pub fn generate_keypair(keypair_name: &str) -> KeypairJSON {
 pub fn add_keypair(
     private_key: &str,
     public_key: &str,
-    name: &str
+    name: &str,
 ) -> Result<KeypairJSON, DisplayMsg> {
     let mut sender_public_key = match base64url::decode(&public_key) {
         Ok(addr) => addr,
@@ -184,7 +184,8 @@ pub fn add_keypair(
 
     // Concatenate two keys together
     sender_private_key.append(&mut sender_public_key);
-    let signature_bytes: pchain_types::cryptography::SignatureBytes = sender_private_key.clone().try_into().unwrap();
+    let signature_bytes: pchain_types::cryptography::SignatureBytes =
+        sender_private_key.clone().try_into().unwrap();
 
     let keypair = match ed25519_dalek::SigningKey::from_keypair_bytes(&signature_bytes) {
         Ok(k) => k,

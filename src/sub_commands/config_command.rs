@@ -6,7 +6,7 @@
 //! Methods related to subcommand `setup` in `pchain-client`.
 
 use config::Config;
-use pchain_client::{NetworkProvider, ClientV2};
+use pchain_client::{ClientV2, NetworkProvider};
 
 use crate::command::ConfigCommand;
 use crate::config;

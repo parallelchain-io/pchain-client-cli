@@ -38,36 +38,32 @@ pub async fn match_submit_subcommand(tx_subcommand: Transaction, config: Config)
                     std::process::exit(1);
                 }
             };
-            println!("submit tx: {:?}\n", submit_tx);
 
             let signed_tx = match submit_tx.prepare_signed_tx(&keypair_name) {
                 Ok(tx) => tx,
                 Err(e) => {
                     println!("{}", e);
                     std::process::exit(1);
-                },
+                }
             };
-            println!("signed tx: {:?}", signed_tx);
-        
-            let response = pchain_client_v2
-                .submit_transaction(&signed_tx)
-                .await;
-            
+
+            let response = pchain_client_v2.submit_transaction(&signed_tx).await;
+
             display_beautified_rpc_result(ClientResponse::SubmitTx(response, signed_tx))
         }
         Transaction::Create {
             destination,
             v1,
             v2,
-            priority_fee_per_gas, 
-            gas_limit, 
-            max_base_fee_per_gas, 
-            nonce, 
-            create_tx_subcommand
+            priority_fee_per_gas,
+            gas_limit,
+            max_base_fee_per_gas,
+            nonce,
+            create_tx_subcommand,
         } => {
             let command = subcommand_parser(create_tx_subcommand);
 
-            let tx = SubmitTx{
+            let tx = SubmitTx {
                 v1,
                 v2,
                 commands: vec![command],

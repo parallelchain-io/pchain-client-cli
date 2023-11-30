@@ -3,8 +3,8 @@
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 */
 
-use std::{fmt, path::PathBuf};
 use pchain_types::rpc::SubmitTransactionErrorV2;
+use std::{fmt, path::PathBuf};
 
 use crate::command::{Base64Address, Base64Hash, Base64String};
 

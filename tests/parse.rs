@@ -1,6 +1,6 @@
 use std::process::Command;
 
-use common::{TestEnv, expect_output};
+use common::{expect_output, TestEnv};
 use serial_test::serial;
 
 mod common;
@@ -13,17 +13,10 @@ mod common;
 fn test_parse() {
     let env = TestEnv::new();
 
-    let output = Command::new(&env.bin)
-        .arg("parse")
-        .output()
-        .unwrap();
+    let output = Command::new(&env.bin).arg("parse").output().unwrap();
     let output = String::from_utf8_lossy(&output.stderr).to_string();
 
-    expect_output(&[
-        "pchain_client-parse",
-        "USAGE:"
-    ], &output)
-    .unwrap();
+    expect_output(&["pchain_client-parse", "USAGE:"], &output).unwrap();
 }
 
 /// - Case:     User enters parse base64 encoding page
@@ -41,11 +34,7 @@ fn test_parse_base64_encoding() {
         .unwrap();
     let output = String::from_utf8_lossy(&output.stderr).to_string();
 
-    expect_output(&[
-        "pchain_client-parse-base64-encoding",
-        "USAGE:"
-    ], &output)
-    .unwrap();
+    expect_output(&["pchain_client-parse-base64-encoding", "USAGE:"], &output).unwrap();
 }
 
 /// - Case:     User parses input into encoded base64url string
@@ -105,11 +94,7 @@ fn test_parse_call_result() {
         .unwrap();
     let output = String::from_utf8_lossy(&output.stderr).to_string();
 
-    expect_output(&[
-        "pchain_client-parse-call-result",
-        "USAGE:"
-    ], &output)
-    .unwrap();
+    expect_output(&["pchain_client-parse-call-result", "USAGE:"], &output).unwrap();
 }
 
 /// - Case:     User specifies a data type, parses base64url string into a decoded data
@@ -141,13 +126,16 @@ fn test_parse_call_result_from_data_type() {
 #[serial]
 fn test_parse_call_result_from_schema() {
     let env = TestEnv::new();
-    let test_file = env.add_file("test.json",
-    serde_json::json!([
-        {"argument_type": "u8"},
-        {"argument_type": "bool"},
-        {"argument_type": "u16"},
-    ]).to_string().as_bytes());
-    
+    let test_file = env.add_file(
+        "test.json",
+        serde_json::json!([
+            {"argument_type": "u8"},
+            {"argument_type": "bool"},
+            {"argument_type": "u16"},
+        ])
+        .to_string()
+        .as_bytes(),
+    );
 
     let output = Command::new(&env.bin)
         .arg("parse")

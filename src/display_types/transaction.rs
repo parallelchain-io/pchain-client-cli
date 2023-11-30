@@ -37,12 +37,12 @@ pub struct Transaction {
     pub signature: Base64String,
 }
 
-impl From<pchain_types::blockchain::TransactionV1> for Transaction { 
+impl From<pchain_types::blockchain::TransactionV1> for Transaction {
     fn from(transaction: pchain_types::blockchain::TransactionV1) -> Transaction {
         let json_values = commands_to_json(transaction.commands);
 
         Transaction {
-            commands: json_values, 
+            commands: json_values,
             signer: base64url::encode(transaction.signer),
             priority_fee_per_gas: transaction.priority_fee_per_gas,
             gas_limit: transaction.gas_limit,
@@ -50,16 +50,16 @@ impl From<pchain_types::blockchain::TransactionV1> for Transaction {
             nonce: transaction.nonce,
             hash: base64url::encode(transaction.hash),
             signature: base64url::encode(transaction.signature),
-        }                
+        }
     }
 }
 
-impl From<pchain_types::blockchain::TransactionV2> for Transaction { 
+impl From<pchain_types::blockchain::TransactionV2> for Transaction {
     fn from(transaction: pchain_types::blockchain::TransactionV2) -> Transaction {
         let json_values = commands_to_json(transaction.commands);
-        
+
         Transaction {
-            commands: json_values, 
+            commands: json_values,
             signer: base64url::encode(transaction.signer),
             priority_fee_per_gas: transaction.priority_fee_per_gas,
             gas_limit: transaction.gas_limit,
@@ -67,30 +67,37 @@ impl From<pchain_types::blockchain::TransactionV2> for Transaction {
             nonce: transaction.nonce,
             hash: base64url::encode(transaction.hash),
             signature: base64url::encode(transaction.signature),
-        }                
+        }
     }
 }
-
 
 fn commands_to_json(commands: Vec<Command>) -> Vec<Value> {
     let mut json_values = vec![];
     for command in commands {
         let v = match command {
-            Command::Transfer (TransferInput{ recipient, amount }) => {
-                let tx_print = TxCommand::Transfer { 
-                    recipient: base64url::encode(recipient), 
-                    amount 
+            Command::Transfer(TransferInput { recipient, amount }) => {
+                let tx_print = TxCommand::Transfer {
+                    recipient: base64url::encode(recipient),
+                    amount,
                 };
                 serde_json::to_value(tx_print).unwrap()
-            },
-            Command::Deploy (DeployInput{contract, cbi_version} ) => {
-                let tx_print = TxCommand::Deploy { 
-                    contract: format!("<contract in {} bytes>", contract.len()).to_string(), 
+            }
+            Command::Deploy(DeployInput {
+                contract,
+                cbi_version,
+            }) => {
+                let tx_print = TxCommand::Deploy {
+                    contract: format!("<contract in {} bytes>", contract.len()).to_string(),
                     cbi_version,
                 };
                 serde_json::to_value(tx_print).unwrap()
-            },
-            Command::Call (CallInput{ target, method, arguments, amount })=> {  
+            }
+            Command::Call(CallInput {
+                target,
+                method,
+                arguments,
+                amount,
+            }) => {
                 let tx_print = json!(
                     {
                         "Call": {
@@ -99,78 +106,89 @@ fn commands_to_json(commands: Vec<Command>) -> Vec<Value> {
                             "amount": amount,
                             "arguments":  serde_json::to_string(&arguments).unwrap()
                         }
-                    }   
+                    }
                 );
                 serde_json::to_value(tx_print).unwrap()
-            },
-            Command::CreatePool (CreatePoolInput{ commission_rate }) => {
-                let tx_print = TxCommand::CreatePool {
-                    commission_rate
-                };
+            }
+            Command::CreatePool(CreatePoolInput { commission_rate }) => {
+                let tx_print = TxCommand::CreatePool { commission_rate };
                 serde_json::to_value(tx_print).unwrap()
-            },
-            Command::SetPoolSettings (SetPoolSettingsInput{ commission_rate }) => {
-                let tx_print = TxCommand::SetPoolSettings {
-                    commission_rate
-                };
+            }
+            Command::SetPoolSettings(SetPoolSettingsInput { commission_rate }) => {
+                let tx_print = TxCommand::SetPoolSettings { commission_rate };
                 serde_json::to_value(tx_print).unwrap()
-            },
+            }
             Command::DeletePool => {
                 let tx_print = TxCommand::DeletePool {};
                 serde_json::to_value(tx_print).unwrap()
-            },
-            Command::CreateDeposit (CreateDepositInput{ operator, balance, auto_stake_rewards }) => {
+            }
+            Command::CreateDeposit(CreateDepositInput {
+                operator,
+                balance,
+                auto_stake_rewards,
+            }) => {
                 let tx_print = TxCommand::CreateDeposit {
                     operator: base64url::encode(operator),
                     balance,
-                    auto_stake_rewards
+                    auto_stake_rewards,
                 };
                 serde_json::to_value(tx_print).unwrap()
-            },
-            Command::SetDepositSettings (SetDepositSettingsInput{ operator, auto_stake_rewards }) => {
+            }
+            Command::SetDepositSettings(SetDepositSettingsInput {
+                operator,
+                auto_stake_rewards,
+            }) => {
                 let tx_print = TxCommand::SetDepositSettings {
                     operator: base64url::encode(operator),
-                    auto_stake_rewards
+                    auto_stake_rewards,
                 };
                 serde_json::to_value(tx_print).unwrap()
-            },
-            Command::TopUpDeposit (TopUpDepositInput{ operator, amount }) => {
+            }
+            Command::TopUpDeposit(TopUpDepositInput { operator, amount }) => {
                 let tx_print = TxCommand::TopUpDeposit {
                     operator: base64url::encode(operator),
-                    amount
+                    amount,
                 };
                 serde_json::to_value(tx_print).unwrap()
-            },
-            Command::WithdrawDeposit (WithdrawDepositInput{ operator, max_amount }) => {
+            }
+            Command::WithdrawDeposit(WithdrawDepositInput {
+                operator,
+                max_amount,
+            }) => {
                 let tx_print = TxCommand::WithdrawDeposit {
                     operator: base64url::encode(operator),
-                    max_amount
+                    max_amount,
                 };
                 serde_json::to_value(tx_print).unwrap()
-            },
-            Command::StakeDeposit (StakeDepositInput{ operator, max_amount }) => {
+            }
+            Command::StakeDeposit(StakeDepositInput {
+                operator,
+                max_amount,
+            }) => {
                 let tx_print = TxCommand::StakeDeposit {
                     operator: base64url::encode(operator),
-                    max_amount
+                    max_amount,
                 };
                 serde_json::to_value(tx_print).unwrap()
-            },
-            Command::UnstakeDeposit (UnstakeDepositInput{ operator, max_amount }) => {
+            }
+            Command::UnstakeDeposit(UnstakeDepositInput {
+                operator,
+                max_amount,
+            }) => {
                 let tx_print = TxCommand::UnstakeDeposit {
                     operator: base64url::encode(operator),
-                    max_amount
+                    max_amount,
                 };
                 serde_json::to_value(tx_print).unwrap()
-            },
+            }
             Command::NextEpoch => {
                 let tx_print = TxCommand::NextEpoch {};
                 serde_json::to_value(tx_print).unwrap()
-            },
+            }
         };
         json_values.push(v);
     }
     json_values
-
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -284,19 +302,18 @@ impl SubmitTx {
     //  * `keypair_name` - Name of the keypair
     pub fn prepare_signed_tx(
         self,
-        keypair_name: &str, 
+        keypair_name: &str,
     ) -> Result<pchain_types::rpc::TransactionV1OrV2, DisplayMsg> {
-        let keypair_json_of_given_user = match get_keypair_from_json(get_keypair_path(), keypair_name){
-            Ok(Some(s)) => s,
-            Ok(None) => {
-                return Err(DisplayMsg::KeypairNotFound(String::from(keypair_name)))
-            },
-            Err(e) => {
-                return Err(e);
-            },          
-        };
+        let keypair_json_of_given_user =
+            match get_keypair_from_json(get_keypair_path(), keypair_name) {
+                Ok(Some(s)) => s,
+                Ok(None) => return Err(DisplayMsg::KeypairNotFound(String::from(keypair_name))),
+                Err(e) => {
+                    return Err(e);
+                }
+            };
 
-        let keypair_bs = match base64url::decode(&keypair_json_of_given_user.keypair){
+        let keypair_bs = match base64url::decode(&keypair_json_of_given_user.keypair) {
             Ok(kp) => kp,
             Err(e) => {
                 return Err(DisplayMsg::FailToDecodeBase64String(
@@ -307,7 +324,9 @@ impl SubmitTx {
             }
         };
 
-        let keypair = match ed25519_dalek::SigningKey::from_keypair_bytes(&SignatureBytes::try_from(keypair_bs).unwrap()) {
+        let keypair = match ed25519_dalek::SigningKey::from_keypair_bytes(
+            &SignatureBytes::try_from(keypair_bs).unwrap(),
+        ) {
             Ok(kp) => kp,
             Err(e) => {
                 println!("{}", DisplayMsg::InvalidEd25519Keypair(e.to_string()));
@@ -324,33 +343,32 @@ impl SubmitTx {
         }
 
         if self.v1 {
-            return Ok(pchain_types::rpc::TransactionV1OrV2::V1(
+            Ok(pchain_types::rpc::TransactionV1OrV2::V1(
                 pchain_types::blockchain::TransactionV1::new(
-                &keypair,
-                self.nonce,
-                commands,
-                self.gas_limit,
-                self.max_base_fee_per_gas, 
-                self.priority_fee_per_gas,
-                )
-            ))
-        } else if self.v2 {
-            return Ok(pchain_types::rpc::TransactionV1OrV2::V2(
-                pchain_types::blockchain::TransactionV2::new(
-                    &keypair, 
-                    self.nonce, 
+                    &keypair,
+                    self.nonce,
                     commands,
                     self.gas_limit,
                     self.max_base_fee_per_gas,
                     self.priority_fee_per_gas,
-                )
+                ),
+            ))
+        } else if self.v2 {
+            Ok(pchain_types::rpc::TransactionV1OrV2::V2(
+                pchain_types::blockchain::TransactionV2::new(
+                    &keypair,
+                    self.nonce,
+                    commands,
+                    self.gas_limit,
+                    self.max_base_fee_per_gas,
+                    self.priority_fee_per_gas,
+                ),
             ))
         } else {
-            todo!("some kind of error ")
+            println!("{}", DisplayMsg::IncorrectCombinationOfIdentifiers(String::from("v1, v2")));
+            std::process::exit(1);
         }
-
     }
-   
 }
 
 // `check_contract_exist` returns contract codeas a vector of bytes.
@@ -417,10 +435,11 @@ pub struct TransactionWithReceipt {
     pub receipt: Receipt,
 }
 
-impl From<(
-    pchain_types::blockchain::TransactionV1,
-    pchain_types::blockchain::ReceiptV1
-)> for TransactionWithReceipt 
+impl
+    From<(
+        pchain_types::blockchain::TransactionV1,
+        pchain_types::blockchain::ReceiptV1,
+    )> for TransactionWithReceipt
 {
     fn from(
         (tx, receipt): (
@@ -428,23 +447,25 @@ impl From<(
             pchain_types::blockchain::ReceiptV1,
         ),
     ) -> TransactionWithReceipt {
+        let receipt: Receipt = receipt
+            .iter()
+            .map(|command_receipt| {
+                From::<pchain_types::blockchain::CommandReceiptV1>::from(command_receipt.clone())
+            })
+            .collect();
 
-        let receipt: Receipt = receipt.iter().map(|command_receipt| {
-            From::<pchain_types::blockchain::CommandReceiptV1>::from(command_receipt.clone())
-        }).collect();
-
-        TransactionWithReceipt{
+        TransactionWithReceipt {
             transaction: From::<pchain_types::blockchain::TransactionV1>::from(tx),
             receipt,
         }
     }
 }
 
-
-impl From<(
-    pchain_types::blockchain::TransactionV2,
-    pchain_types::blockchain::ReceiptV2
-)> for TransactionWithReceipt 
+impl
+    From<(
+        pchain_types::blockchain::TransactionV2,
+        pchain_types::blockchain::ReceiptV2,
+    )> for TransactionWithReceipt
 {
     fn from(
         (tx, receipt): (
@@ -452,12 +473,15 @@ impl From<(
             pchain_types::blockchain::ReceiptV2,
         ),
     ) -> TransactionWithReceipt {
+        let receipt: Receipt = receipt
+            .command_receipts
+            .iter()
+            .map(|command_receipt| {
+                From::<pchain_types::blockchain::CommandReceiptV2>::from(command_receipt.clone())
+            })
+            .collect();
 
-        let receipt: Receipt = receipt.command_receipts.iter().map(|command_receipt| {
-            From::<pchain_types::blockchain::CommandReceiptV2>::from(command_receipt.clone())
-        }).collect();
-
-        TransactionWithReceipt{
+        TransactionWithReceipt {
             transaction: From::<pchain_types::blockchain::TransactionV2>::from(tx),
             receipt,
         }

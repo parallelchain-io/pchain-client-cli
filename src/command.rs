@@ -56,6 +56,7 @@ pub(crate) enum PChainCLI {
 #[derive(Debug, Subcommand)]
 pub enum Transaction {
     /// Create new Transaction with command and save to a JSON file.
+    /// You are required to specify transaction version.
     #[clap(display_order = 1)]
     Create {
         /// [Optional] Destination path of the output Transaction file. If not provided, default save file to current directory with filename `tx.json`.
@@ -63,26 +64,28 @@ pub enum Transaction {
         #[clap(long = "destination", display_order = 1)]
         destination: Option<String>,
 
-        #[clap(long="v1", display_order=2)]
+        /// [One of] Specify this flag when submitting TransactionV1.
+        #[clap(long = "v1", display_order = 2)]
         v1: bool,
 
-        #[clap(long="v2", display_order=2)]
+        /// [One of] Specify this flag when submitting TransactionV2.
+        #[clap(long = "v2", display_order = 3)]
         v2: bool,
 
         /// Number of Transactions originating from the Account so far in the ParallelChain network.
-        #[clap(long = "nonce", display_order = 1)]
+        #[clap(long = "nonce", display_order = 4)]
         nonce: u64,
 
         /// The maximum number of gas units that can be used in executing this transaction.
-        #[clap(long = "gas-limit", display_order = 2)]
+        #[clap(long = "gas-limit", display_order = 5)]
         gas_limit: u64,
 
         /// The maximum number of Grays that you are willing to burn for the gas unit used in this transaction.
-        #[clap(long = "max-base-fee-per-gas", display_order = 3)]
+        #[clap(long = "max-base-fee-per-gas", display_order = 6)]
         max_base_fee_per_gas: u64,
 
         /// The number of Grays that you are willing to pay the block proposer for including this transaction in a block.
-        #[clap(long = "priority-fee-per-gas", display_order = 4)]
+        #[clap(long = "priority-fee-per-gas", display_order = 7)]
         priority_fee_per_gas: u64,
 
         #[clap(subcommand)]
