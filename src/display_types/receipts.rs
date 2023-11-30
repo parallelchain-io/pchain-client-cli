@@ -15,10 +15,17 @@ pub struct Event {
     pub value: String,
 }
 
-/// [CommandReceipt] denotes a display_types equivalent pchain_types::blockchain::CommandReceipt.
+pub type Receipt = Vec<CommandReceipt>;
+
 #[derive(Serialize, Debug)]
-pub struct CommandReceipt {
-    pub status_code: String,
+pub enum CommandReceipt {
+    V1(V1Receipt),
+    V2(V2Receipt),
+}
+
+#[derive(Serialize, Debug)]
+pub struct V1Receipt {
+    pub exit_code: String,
     pub gas_used: u64,
     pub return_values: String,
     pub logs: Vec<Event>,
@@ -26,223 +33,110 @@ pub struct CommandReceipt {
 
 impl From<pchain_types::blockchain::CommandReceiptV1> for CommandReceipt {
     fn from(receipt: pchain_types::blockchain::CommandReceiptV1) -> CommandReceipt {
+
         let events_beautified: Vec<Event> = receipt
-            .logs
-            .into_iter()
-            .map(|pchain_types_event|{
-                From::<pchain_types::blockchain::Log>::from(pchain_types_event)
-            })
-            .collect();
+        .logs
+        .into_iter()
+        .map(|pchain_types_event|{
+            From::<pchain_types::blockchain::Log>::from(pchain_types_event)
+        })
+        .collect();
 
-        let status_code = format!("{:?}", receipt.exit_code);
-        CommandReceipt {
-            status_code,
-            gas_used: receipt.gas_used,
-            return_values: if !receipt.return_values.is_empty() {
-                format!(
-                    "(Base64 encoded) {}",
-                    base64url::encode(&receipt.return_values)
-                )
-            } else {
-                "".to_string()
-            },
-            logs: events_beautified,
-        }
-    }
-}
+    let exit_code = format!("{:?}", receipt.exit_code);
 
-pub type Receipt = Vec<CommandReceipt>;
-
-#[derive(Serialize, Debug)]
-pub struct CallReceipt {
-    pub exit_code: String,
-    pub gas_used: u64,
-    pub return_values: String,
-    pub logs: Vec<Event>,
-}
-
-impl From<pchain_types::blockchain::CommandReceiptV1> for CallReceipt {
-    fn from(receipt: pchain_types::blockchain::CommandReceiptV1) -> CallReceipt {
-        let events_beautified: Vec<Event> = receipt
-            .logs
-            .into_iter()
-            .map(|pchain_types_event|{
-                From::<pchain_types::blockchain::Log>::from(pchain_types_event)
-            })
-            .collect();
-
-        let exit_code = format!("{:?}", receipt.exit_code);
-
-        CallReceipt {
-            exit_code,
-            gas_used: receipt.gas_used,
-            return_values: if !receipt.return_values.is_empty() {
-                format!(
-                    "(Base64 encoded) {}",
-                    base64url::encode(&receipt.return_values)
-                )
-            } else {
-                "".to_string()
-            },
-            logs: events_beautified,
-        }
-    }
-}
-
-impl From<pchain_types::blockchain::CommandReceiptV2> for CallReceipt {
-    fn from(receipt: pchain_types::blockchain::CommandReceiptV2) -> CallReceipt {
-
-        if let CommandReceiptV2::Call(receipt) = receipt {
-            let exit_code = format!("{:?}", receipt.exit_code);
-
-            let beautified_events: Vec<Event> = receipt
-                .logs
-                .into_iter()
-                .map(|pchain_types_event| {
-                    From::<pchain_types::blockchain::Log>::from(pchain_types_event)
-                })
-                .collect(); 
-
-            CallReceipt {
+        CommandReceipt::V1(
+            V1Receipt { 
                 exit_code,
                 gas_used: receipt.gas_used,
-                return_values: if !receipt.return_value.is_empty() {
+                return_values: if !receipt.return_values.is_empty() {
                     format!(
                         "(Base64 encoded) {}",
-                        base64url::encode(&receipt.return_value)
+                        base64url::encode(&receipt.return_values)
                     )
                 } else {
                     "".to_string()
                 },
-                logs: beautified_events,
+                logs: events_beautified,
             }
-        } else {
-            todo!("some kind of error");
-
-        }
-
+        )
     }
 }
 
-
 #[derive(Serialize, Debug)]
-pub struct CommonReceipt {
+pub struct V2Receipt {
     pub exit_code: String,
     pub gas_used: u64,
-}
-
-#[derive(Serialize, Debug)]
-pub struct DepositReceipt {
-    pub exit_code: String,
-    pub gas_used: u64,
-    pub amount: u64
-}
-
-#[derive(Serialize, Debug)]
-pub struct Receipt2 {
-    pub exit_code: String,
-    pub gas_used: u64,
-    pub amount: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub return_values: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub logs: Option<Vec<Event>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub amount: Option<u64>
 }
 
-impl From<pchain_types::blockchain::CommandReceiptV1> for Receipt2 {
-    fn from(receipt: pchain_types::blockchain::CommandReceiptV1) -> Receipt2 {
-        let events_beautified: Vec<Event> = receipt
-            .logs
-            .into_iter()
-            .map(|pchain_types_event|{
-                From::<pchain_types::blockchain::Log>::from(pchain_types_event)
-            })
-            .collect();
-
-        let exit_code = format!("{:?}", receipt.exit_code);
-
-        Receipt2 {
-            exit_code,
-            gas_used: receipt.gas_used,
-            return_values: if !receipt.return_values.is_empty() {
-                Some(format!(
-                    "(Base64 encoded) {}",
-                    base64url::encode(&receipt.return_values)
-                ))
-            } else {
-                Some("".to_string())
-            },
-            logs: Some(events_beautified),
+impl V2Receipt {
+    fn new(exit_code: ExitCodeV2, gas_used: u64) -> Self {
+        Self { 
+            exit_code: format!("{:?}", exit_code),
+            gas_used,
+            return_values: None,
+            logs: None,
             amount: None,
         }
     }
-}
 
-impl From<pchain_types::blockchain::CommandReceiptV2> for Receipt2 {
-    fn from(receipt: pchain_types::blockchain::CommandReceiptV2) -> Receipt2 {
-
-        let receipt: Receipt2 = match receipt {
-            CommandReceiptV2::Transfer(r) => to_common_receipt(r.exit_code, r.gas_used),
-            CommandReceiptV2::Deploy(r) => to_common_receipt(r.exit_code, r.gas_used),
-            CommandReceiptV2::CreatePool(r) => to_common_receipt(r.exit_code, r.gas_used),
-            CommandReceiptV2::SetPoolSettings(r) => to_common_receipt(r.exit_code, r.gas_used),
-            CommandReceiptV2::DeletePool(r) => to_common_receipt(r.exit_code, r.gas_used),
-            CommandReceiptV2::CreateDeposit(r) => to_common_receipt(r.exit_code, r.gas_used),
-            CommandReceiptV2::SetDepositSettings(r) => to_common_receipt(r.exit_code, r.gas_used),
-            CommandReceiptV2::TopUpDeposit(r) => to_common_receipt(r.exit_code, r.gas_used),
-            CommandReceiptV2::NextEpoch(r) => to_common_receipt(r.exit_code, r.gas_used),
-            CommandReceiptV2::Call(r) => to_call_receipt(r),
-            CommandReceiptV2::WithdrawDeposit(r) => to_deposit_receipt(r.exit_code, r.gas_used, r.amount_withdrawn),
-            CommandReceiptV2::StakeDeposit(r) => to_deposit_receipt(r.exit_code, r.gas_used, r.amount_staked),
-            CommandReceiptV2::UnstakeDeposit(r) => to_deposit_receipt(r.exit_code, r.gas_used, r.amount_unstaked),
+    fn return_values(mut self, return_values: Vec<u8>) -> Self {
+        let str = if !return_values.is_empty() {
+            format!(
+                "(Base64 encoded) {}",
+                base64url::encode(&return_values)
+            )
+        } else {
+            "".to_string()
         };
 
-        receipt
+        self.return_values =  Some(str);
+        self
+    }
+
+    fn logs(mut self, logs: Vec<pchain_types::blockchain::Log>) -> Self {
+        let beautified_events: Vec<Event> = logs
+            .into_iter()
+            .map(|pchain_types_event| {
+                From::<pchain_types::blockchain::Log>::from(pchain_types_event)
+            })
+            .collect(); 
+
+        self.logs = Some(beautified_events);
+        self
+    }
+
+    fn amount(mut self, amount: u64) -> Self {
+        self.amount = Some(amount);
+        self
     }
 }
 
-fn to_common_receipt(exit_code: ExitCodeV2, gas_used: u64) -> Receipt2 {
-    Receipt2 {
-        exit_code: format!("{:?}", exit_code),
-        gas_used,
-        amount: None,
-        return_values: None,
-        logs: None,
-    }
-}
 
-fn to_call_receipt(receipt: pchain_types::blockchain::CallReceipt) -> Receipt2 {
+impl From<pchain_types::blockchain::CommandReceiptV2> for CommandReceipt {
+    fn from(receipt: pchain_types::blockchain::CommandReceiptV2) -> CommandReceipt {
 
-    let return_values = if !receipt.return_value.is_empty() {
-        format!(
-            "(Base64 encoded) {}",
-            base64url::encode(&receipt.return_value)
-        )
-    } else {
-        "".to_string()
-    };
+        let receipt: V2Receipt = match receipt {
+            CommandReceiptV2::Transfer(r) => V2Receipt::new(r.exit_code, r.gas_used),
+            CommandReceiptV2::Deploy(r) => V2Receipt::new(r.exit_code, r.gas_used),
+            CommandReceiptV2::CreatePool(r) => V2Receipt::new(r.exit_code, r.gas_used),
+            CommandReceiptV2::SetPoolSettings(r) => V2Receipt::new(r.exit_code, r.gas_used),
+            CommandReceiptV2::DeletePool(r) => V2Receipt::new(r.exit_code, r.gas_used),
+            CommandReceiptV2::CreateDeposit(r) => V2Receipt::new(r.exit_code, r.gas_used),
+            CommandReceiptV2::SetDepositSettings(r) => V2Receipt::new(r.exit_code, r.gas_used),
+            CommandReceiptV2::TopUpDeposit(r) => V2Receipt::new(r.exit_code, r.gas_used),
+            CommandReceiptV2::NextEpoch(r) => V2Receipt::new(r.exit_code, r.gas_used),
+            CommandReceiptV2::Call(r) => V2Receipt::new(r.exit_code, r.gas_used).return_values(r.return_value).logs(r.logs),
+            CommandReceiptV2::WithdrawDeposit(r) => V2Receipt::new(r.exit_code, r.gas_used).amount(r.amount_withdrawn),
+            CommandReceiptV2::StakeDeposit(r) => V2Receipt::new(r.exit_code, r.gas_used).amount(r.amount_staked),
+            CommandReceiptV2::UnstakeDeposit(r) => V2Receipt::new(r.exit_code, r.gas_used).amount(r.amount_unstaked),
+        };
 
-    let beautified_events: Vec<Event> = receipt
-        .logs
-        .into_iter()
-        .map(|pchain_types_event| {
-            From::<pchain_types::blockchain::Log>::from(pchain_types_event)
-        })
-        .collect(); 
-
-    Receipt2 {
-        exit_code: format!("{:?}", receipt.exit_code),
-        gas_used: receipt.gas_used,
-        amount: None,
-        return_values: Some(return_values),
-        logs: Some(beautified_events),
-    }
-}
-
-fn to_deposit_receipt(exit_code: ExitCodeV2, gas_used: u64, amount: u64) -> Receipt2 {
-    Receipt2 {
-        exit_code: format!("{:?}", exit_code),
-        gas_used,
-        amount: Some(amount),
-        return_values: None,
-        logs: None,
+        CommandReceipt::V2(receipt)
     }
 }

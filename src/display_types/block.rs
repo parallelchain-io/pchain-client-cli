@@ -5,15 +5,17 @@
 
 //! Data structures which convert pchain_types::Block to a form which can be displayed on the terminal.
 
-use crate::display_types::{QuorumCertificate, Receipt2, Transaction};
+use crate::display_types::{QuorumCertificate, CommandReceipt, Transaction};
 use serde::Serialize;
+
+use super::Receipt;
 
 /// [Block] denotes a display_type equivalent of pchain_types::blockchain::Block
 #[derive(Serialize, Debug)]
 pub struct Block {
     pub header: BlockHeader,
     pub transactions: Vec<Transaction>,
-    pub receipts: Vec<Vec<Receipt2>>,
+    pub receipts: Vec<Receipt>,
 }
 
 impl From<pchain_types::blockchain::BlockV1> for Block {
@@ -23,13 +25,13 @@ impl From<pchain_types::blockchain::BlockV1> for Block {
             .into_iter()
             .map(From::<pchain_types::blockchain::TransactionV1>::from)
             .collect();
-        let receipt_beautified: Vec<Vec<Receipt2>> = block
+        let receipt_beautified: Vec<Receipt> = block
             .receipts
             .into_iter()
             .map(|protocol_type_receipt| {
                 protocol_type_receipt
                     .into_iter()
-                    .map(Receipt2::from)
+                    .map(CommandReceipt::from)
                     .collect()
             })
             .collect();
@@ -49,14 +51,14 @@ impl From<pchain_types::blockchain::BlockV2> for Block {
             .into_iter()
             .map(From::<pchain_types::blockchain::TransactionV2>::from)
             .collect();
-        let receipt_beautified: Vec<Vec<Receipt2>> = block
+        let receipt_beautified: Vec<Receipt> = block
             .receipts
             .into_iter()
             .map(|protocol_type_receipt| {
                 protocol_type_receipt
                     .command_receipts
                     .into_iter()
-                    .map(super::Receipt2::from)
+                    .map(super::CommandReceipt::from)
                     .collect()
             })
             .collect();

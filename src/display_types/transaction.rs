@@ -22,7 +22,7 @@ use crate::display_types::{Event, TxCommand};
 use crate::keypair::get_keypair_from_json;
 use crate::utils::{read_file, read_file_to_utf8string};
 
-use super::Receipt2;
+use super::Receipt;
 
 /// [Transaction] denotes a display_types equivalent of pchain_types::blockchain::Transaction.
 #[derive(Serialize, Debug)]
@@ -345,7 +345,7 @@ impl SubmitTx {
                     self.priority_fee_per_gas,
                 )
             ))
-        } {
+        } else {
             todo!("some kind of error ")
         }
 
@@ -414,7 +414,7 @@ pub fn read_contract_code(path: &str) -> Result<Vec<u8>, DisplayMsg> {
 #[derive(Serialize, Debug)]
 pub struct TransactionWithReceipt {
     pub transaction: Transaction,
-    pub receipt: Vec<Receipt2>,
+    pub receipt: Receipt,
 }
 
 impl From<(
@@ -429,7 +429,7 @@ impl From<(
         ),
     ) -> TransactionWithReceipt {
 
-        let receipt: Vec<Receipt2> = receipt.iter().map(|command_receipt| {
+        let receipt: Receipt = receipt.iter().map(|command_receipt| {
             From::<pchain_types::blockchain::CommandReceiptV1>::from(command_receipt.clone())
         }).collect();
 
@@ -453,7 +453,7 @@ impl From<(
         ),
     ) -> TransactionWithReceipt {
 
-        let receipt: Vec<Receipt2> = receipt.command_receipts.iter().map(|command_receipt| {
+        let receipt: Receipt = receipt.command_receipts.iter().map(|command_receipt| {
             From::<pchain_types::blockchain::CommandReceiptV2>::from(command_receipt.clone())
         }).collect();
 

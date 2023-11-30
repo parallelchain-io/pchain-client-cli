@@ -8,11 +8,11 @@
 use crate::command::Base64String;
 use crate::display_msg::DisplayMsg;
 use crate::display_types::{
-    Block, BlockHeader, CommandReceipt, Deposit, Pool, Receipt, Stake, Transaction,
-    TransactionWithReceipt, ValidatorSet, CallReceipt, Receipt2,
+    Block, BlockHeader, Deposit, Pool, CommandReceipt, Stake, Transaction,
+    TransactionWithReceipt, ValidatorSet, Receipt,
 };
 use crate::utils::write_file;
-use pchain_types::blockchain::CommandReceiptV2;
+use pchain_types::blockchain::{CommandReceiptV2, CommandReceiptV1};
 use pchain_types::rpc::*;
 use serde_json::Value;
 use std::collections::BTreeMap;
@@ -199,18 +199,15 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
                 }
             };
 
-            match receipt {
-                ReceiptV1ToV2::V1(r) => {
-                    let receipt_print: Receipt = r.into_iter().map(CommandReceipt::from).collect();
-                    println!("{:#}", serde_json::to_value(receipt_print).unwrap())
+            let receipt_print: Receipt = match receipt {
+                ReceiptV1ToV2::V1(command_receipts) => {
+                    command_receipts.into_iter().map(From::<CommandReceiptV1>::from).collect()
                 },
-                ReceiptV1ToV2::V2(r) => {
-                    let receipt_print: Vec<Receipt2> = r.command_receipts.into_iter().map(|command_receipt| {
-                        From::<CommandReceiptV2>::from(command_receipt)
-                    }).collect();
-                    println!("{:#}", serde_json::to_value(receipt_print).unwrap())
-                },
-            }
+                ReceiptV1ToV2::V2(receipt) => {
+                    receipt.command_receipts.into_iter().map(From::<CommandReceiptV2>::from).collect()
+                }
+            };
+            println!("{:#}", serde_json::to_value(receipt_print).unwrap())
 
         }
         ClientResponse::Contract(result, destination) => match result {
@@ -456,7 +453,7 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
         }
         ClientResponse::View(result) => {
 
-            let receipt_print: CallReceipt = match result {
+            let receipt_print: CommandReceipt = match result {
                 Ok(ViewResponseV2 { command_receipt }) => {
                     match command_receipt {
                         CommandReceiptV1ToV2::V1(r) => {
