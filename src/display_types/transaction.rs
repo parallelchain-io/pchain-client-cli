@@ -365,7 +365,10 @@ impl SubmitTx {
                 ),
             ))
         } else {
-            println!("{}", DisplayMsg::IncorrectCombinationOfIdentifiers(String::from("v1, v2")));
+            println!(
+                "{}",
+                DisplayMsg::IncorrectCombinationOfIdentifiers(String::from("v1, v2"))
+            );
             std::process::exit(1);
         }
     }

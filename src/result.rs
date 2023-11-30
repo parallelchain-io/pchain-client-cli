@@ -133,16 +133,17 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
             }
         }
         ClientResponse::Block(result) => match result {
-            Ok(BlockResponseV2 { block: Some(block) }) => match block {
-                BlockV1ToV2::V1(block) => {
-                    let block_print: Block = From::<pchain_types::blockchain::BlockV1>::from(block);
-                    println!("{:#}", serde_json::to_value(block_print).unwrap())
-                }
-                BlockV1ToV2::V2(block) => {
-                    let block_print: Block = From::<pchain_types::blockchain::BlockV2>::from(block);
-                    println!("{:#}", serde_json::to_value(block_print).unwrap())
-                }
-            },
+            Ok(BlockResponseV2 { block: Some(block) }) => {
+                let block_print: Block = match block {
+                    BlockV1ToV2::V1(block) => {
+                        From::<pchain_types::blockchain::BlockV1>::from(block)
+                    }
+                    BlockV1ToV2::V2(block) => {
+                        From::<pchain_types::blockchain::BlockV2>::from(block)
+                    }
+                };
+                println!("{:#}", serde_json::to_value(block_print).unwrap())
+            }
             Err(e) => {
                 println!("{}", DisplayMsg::RespnoseWithHTTPError(e));
                 std::process::exit(1);
@@ -155,19 +156,17 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
         ClientResponse::BlockHeader(result) => match result {
             Ok(BlockHeaderResponseV2 {
                 block_header: Some(bh),
-            }) => match bh {
-                BlockHeaderV1ToV2::V1(bh) => {
-                    let header_print: BlockHeader =
-                        From::<pchain_types::blockchain::BlockHeaderV1>::from(bh);
-
-                    println!("{:#}", serde_json::to_value(header_print).unwrap())
-                }
-                BlockHeaderV1ToV2::V2(bh) => {
-                    let header_print: BlockHeader =
-                        From::<pchain_types::blockchain::BlockHeaderV2>::from(bh);
-                    println!("{:#}", serde_json::to_value(header_print).unwrap())
-                }
-            },
+            }) => {
+                let header_print: BlockHeader = match bh {
+                    BlockHeaderV1ToV2::V1(bh) => {
+                        From::<pchain_types::blockchain::BlockHeaderV1>::from(bh)
+                    }
+                    BlockHeaderV1ToV2::V2(bh) => {
+                        From::<pchain_types::blockchain::BlockHeaderV2>::from(bh)
+                    }
+                };
+                println!("{:#}", serde_json::to_value(header_print).unwrap())
+            }
             Err(e) => {
                 println!("{}", DisplayMsg::RespnoseWithHTTPError(e));
                 std::process::exit(1);
@@ -220,7 +219,7 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
                     _ => {
                         println!("{}", DisplayMsg::CannotFindRelevantReceipt);
                         std::process::exit(1);
-                    },
+                    }
                 },
             },
             Err(e) => {
@@ -232,36 +231,35 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
                 std::process::exit(1);
             }
         },
-        ClientResponse::Receipt(result) => {
-            let receipt: pchain_types::rpc::ReceiptV1ToV2 = match result {
-                Ok(ReceiptResponseV2 {
-                    transaction_hash: _,
-                    receipt: Some(receipt),
-                    block_hash: _,
-                    position: _,
-                }) => receipt,
-                Err(_) => {
-                    std::process::exit(1);
-                }
-                _ => {
-                    println!("{}", DisplayMsg::CannotFindRelevantReceipt);
-                    std::process::exit(1);
-                }
-            };
-
-            let receipt_print: Receipt = match receipt {
-                ReceiptV1ToV2::V1(command_receipts) => command_receipts
-                    .into_iter()
-                    .map(From::<CommandReceiptV1>::from)
-                    .collect(),
-                ReceiptV1ToV2::V2(receipt) => receipt
-                    .command_receipts
-                    .into_iter()
-                    .map(From::<CommandReceiptV2>::from)
-                    .collect(),
-            };
-            println!("{:#}", serde_json::to_value(receipt_print).unwrap())
-        }
+        ClientResponse::Receipt(result) => match result {
+            Ok(ReceiptResponseV2 {
+                transaction_hash: _,
+                receipt: Some(receipt),
+                block_hash: _,
+                position: _,
+            }) => {
+                let receipt_print: Receipt = match receipt {
+                    ReceiptV1ToV2::V1(command_receipts) => command_receipts
+                        .into_iter()
+                        .map(From::<CommandReceiptV1>::from)
+                        .collect(),
+                    ReceiptV1ToV2::V2(receipt) => receipt
+                        .command_receipts
+                        .into_iter()
+                        .map(From::<CommandReceiptV2>::from)
+                        .collect(),
+                };
+                println!("{:#}", serde_json::to_value(receipt_print).unwrap())
+            }
+            Err(e) => {
+                println!("{}", DisplayMsg::RespnoseWithHTTPError(e));
+                std::process::exit(1);
+            }
+            _ => {
+                println!("{}", DisplayMsg::CannotFindRelevantReceipt);
+                std::process::exit(1);
+            }
+        },
         ClientResponse::Contract(result, destination) => match result {
             Ok(StateResponse {
                 accounts,
