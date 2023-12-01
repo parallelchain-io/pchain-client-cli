@@ -56,7 +56,7 @@ pub(crate) enum PChainCLI {
 #[derive(Debug, Subcommand)]
 pub enum Transaction {
     /// Create new Transaction with command and save to a JSON file.
-    /// You are required to specify transaction version.
+    /// You are required to specify the transaction version.
     #[clap(display_order = 1)]
     Create {
         /// [Optional] Destination path of the output Transaction file. If not provided, default save file to current directory with filename `tx.json`.
@@ -401,13 +401,8 @@ pub enum Parse {
     /// Compute the contract address of a Contract in transaction.
     #[clap(arg_required_else_help = true, display_order = 3)]
     ContractAddress {
-        /// Address of the signer account.
-        #[clap(long = "address", display_order = 1, allow_hyphen_values(true))]
-        address: Base64Address,
-
-        /// Nonce of the signer account when deploying the contract.
-        #[clap(long = "nonce", display_order = 2)]
-        nonce: u64,
+        #[clap(subcommand)]
+        version: ContractAddressVersion,
     },
 }
 
@@ -440,6 +435,37 @@ pub enum Validators {
         /// [Optional] Include delegator set in result.
         #[clap(long = "with-delegator", display_order = 1)]
         with_delegator: bool,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum ContractAddressVersion {
+    /// Parse the first version of contract address which is defined in ParallelChain Protocol V0.4.
+    #[clap(arg_required_else_help = false, display_order = 1)]
+    V1 {
+        /// Address of the signer account.
+        #[clap(long = "address", display_order = 3, allow_hyphen_values(true))]
+        address: Base64Address,
+
+        /// Nonce of the signer account when deploying the contract.
+        #[clap(long = "nonce", display_order = 4)]
+        nonce: u64,
+    },
+
+    /// Parse the first version of contract address which is defined in ParallelChain Protocol V0.5.
+    #[clap(arg_required_else_help = false, display_order = 2)]
+    V2 {
+        /// Address of the signer account.
+        #[clap(long = "address", display_order = 3, allow_hyphen_values(true))]
+        address: Base64Address,
+
+        /// Nonce of the signer account when deploying the contract.
+        #[clap(long = "nonce", display_order = 4)]
+        nonce: u64,
+
+        /// Index of the deploy command in the transaction.
+        #[clap(long = "deploy_cmd_index", display_order = 5)]
+        index: u32,
     },
 }
 

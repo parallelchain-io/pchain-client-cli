@@ -8,7 +8,7 @@
 use serde_json::Value;
 
 use crate::{
-    command::Parse,
+    command::{ContractAddressVersion, Parse},
     display_msg::DisplayMsg,
     parser::{
         base64url_to_public_address, parse_call_result_from_data_type,
@@ -127,27 +127,53 @@ pub fn match_parse_subcommand(parse_subcommand: Parse) {
                 }
             }
         }
-        Parse::ContractAddress { address, nonce } => {
-            match base64url_to_public_address(&address) {
-                Ok(sender_address) => println!(
-                    "Contract Address: {}",
-                    base64url::encode(pchain_types::cryptography::contract_address_v1(
-                        &sender_address,
-                        nonce
-                    ))
-                ),
-                Err(_) => {
-                    println!(
-                        "{}",
-                        DisplayMsg::FailToDecodeBase64Address(
-                            String::from("address"),
-                            address,
-                            String::new()
+        Parse::ContractAddress { version } => match version {
+            ContractAddressVersion::V1 { address, nonce } => {
+                match base64url_to_public_address(&address) {
+                    Ok(sender_address) => {
+                        println!(
+                            "Contract Address: {}",
+                            base64url::encode(pchain_types::cryptography::contract_address_v1(
+                                &sender_address,
+                                nonce
+                            ))
                         )
-                    );
-                }
-            };
-        }
+                    }
+                    Err(_) => {
+                        println!(
+                            "{}",
+                            DisplayMsg::IncorrectCombinationOfIdentifiers(String::from("v1, v2"))
+                        );
+                        std::process::exit(1);
+                    }
+                };
+            }
+            ContractAddressVersion::V2 {
+                address,
+                nonce,
+                index,
+            } => {
+                match base64url_to_public_address(&address) {
+                    Ok(sender_address) => {
+                        println!(
+                            "Contract Address: {}",
+                            base64url::encode(pchain_types::cryptography::contract_address_v2(
+                                &sender_address,
+                                nonce,
+                                index
+                            ))
+                        )
+                    }
+                    Err(_) => {
+                        println!(
+                            "{}",
+                            DisplayMsg::IncorrectCombinationOfIdentifiers(String::from("v1, v2"))
+                        );
+                        std::process::exit(1);
+                    }
+                };
+            }
+        },
     };
     std::process::exit(1);
 }
