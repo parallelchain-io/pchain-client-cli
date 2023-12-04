@@ -125,29 +125,6 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
             ref tx_hash,
             latest,
         } => {
-            let mut count_args = 0;
-            if block_height.is_some() {
-                count_args += 1;
-            }
-            if block_hash.is_some() {
-                count_args += 1;
-            }
-            if tx_hash.is_some() {
-                count_args += 1;
-            }
-            if latest {
-                count_args += 1;
-            }
-            if count_args != 1 {
-                println!(
-                    "{}",
-                    DisplayMsg::IncorrectCombinationOfIdentifiers(String::from(
-                        "latest, block-num, block-hash, tx-hash"
-                    ))
-                );
-                std::process::exit(1)
-            }
-
             if latest {
                 let response = pchain_client_v2.highest_committed_block().await;
 

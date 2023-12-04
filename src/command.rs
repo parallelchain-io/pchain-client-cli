@@ -7,7 +7,7 @@
 
 use std::path::PathBuf;
 
-use clap::{Parser, Subcommand};
+use clap::{ArgGroup, Parser, Subcommand};
 
 pub type Base64Address = String;
 pub type Base64Hash = String;
@@ -58,6 +58,7 @@ pub enum Transaction {
     /// Create new Transaction with command and save to a JSON file.
     /// You are required to specify the transaction version.
     #[clap(display_order = 1)]
+    #[clap(group(ArgGroup::new("version").required(true).multiple(false).args(&["v1", "v2"])))]
     Create {
         /// [Optional] Destination path of the output Transaction file. If not provided, default save file to current directory with filename `tx.json`.
         /// File with same name will be OVERWRITTEN. Directory provided has to exist.
@@ -177,6 +178,7 @@ pub enum Query {
     /// Query block information. Search the block either by block height, block hash or tx hash.
     /// You are required to specify one of the optional parameter.
     #[clap(arg_required_else_help = true, display_order = 6)]
+    #[clap(group(ArgGroup::new("block").required(true).multiple(false).args(&["block-height", "block-hash", "tx-hash", "latest"])))]
     Block {
         /// [Optional] Block height of the Block you'd like to query.
         #[clap(long = "block-height", display_order = 1)]
@@ -198,6 +200,7 @@ pub enum Query {
     /// Query block header only. Search the block either by block height, block hash or tx hash.
     /// You are required to specify one of the optional parameter.
     #[clap(arg_required_else_help = true, display_order = 7)]
+    #[clap(group(ArgGroup::new("blockheader").required(true).multiple(false).args(&["block-height", "block-hash", "tx-hash", "latest"])))]
     BlockHeader {
         /// [Optional] Block height of the Block you'd like to query.
         #[clap(long = "block-height", display_order = 1)]
@@ -350,6 +353,7 @@ pub enum Keys {
 pub enum Parse {
     /// Encode / decode the provided array / string
     #[clap(arg_required_else_help = true, display_order = 1)]
+    #[clap(group(ArgGroup::new("encoding").required(true).multiple(false).args(&["encode", "decode"])))]
     Base64Encoding {
         /// [One Of] Base64 Encode Mode: encode array to Base64 string
         #[clap(long = "encode", display_order = 1)]

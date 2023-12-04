@@ -29,40 +29,30 @@ pub fn match_parse_subcommand(parse_subcommand: Parse) {
             decode,
             value,
         } => {
-            // if one and only one of the encode / decode argument is true
-            if encode ^ decode {
-                if encode {
-                    match serde_json::from_str::<Vec<u8>>(&value) {
-                        Ok(d) => println!("{}", base64url::encode(d)),
-                        Err(_) => {
-                            println!(
-                                "{}",
-                                DisplayMsg::IncorrectFormatForSuppliedArgument(String::from(
-                                    "vector"
-                                ))
-                            );
-                        }
-                    };
-                }
-
-                if decode {
-                    match base64url::decode(&value) {
-                        Ok(d) => println!("{:?}", d),
-                        Err(e) => println!(
+            if encode {
+                match serde_json::from_str::<Vec<u8>>(&value) {
+                    Ok(d) => println!("{}", base64url::encode(d)),
+                    Err(_) => {
+                        println!(
                             "{}",
-                            DisplayMsg::FailToDecodeBase64String(
-                                String::from("provided string"),
-                                value,
-                                e.to_string()
-                            )
-                        ),
-                    };
-                }
-            } else {
-                println!(
-                    "{}",
-                    DisplayMsg::IncorrectCombinationOfIdentifiers(String::from("encode, decode"))
-                );
+                            DisplayMsg::IncorrectFormatForSuppliedArgument(String::from("vector"))
+                        );
+                    }
+                };
+            }
+
+            if decode {
+                match base64url::decode(&value) {
+                    Ok(d) => println!("{:?}", d),
+                    Err(e) => println!(
+                        "{}",
+                        DisplayMsg::FailToDecodeBase64String(
+                            String::from("provided string"),
+                            value,
+                            e.to_string()
+                        )
+                    ),
+                };
             }
         }
 
@@ -139,11 +129,8 @@ pub fn match_parse_subcommand(parse_subcommand: Parse) {
                             ))
                         )
                     }
-                    Err(_) => {
-                        println!(
-                            "{}",
-                            DisplayMsg::IncorrectCombinationOfIdentifiers(String::from("v1, v2"))
-                        );
+                    Err(e) => {
+                        println!("{}", e);
                         std::process::exit(1);
                     }
                 };
@@ -164,11 +151,8 @@ pub fn match_parse_subcommand(parse_subcommand: Parse) {
                             ))
                         )
                     }
-                    Err(_) => {
-                        println!(
-                            "{}",
-                            DisplayMsg::IncorrectCombinationOfIdentifiers(String::from("v1, v2"))
-                        );
+                    Err(e) => {
+                        println!("{}", e);
                         std::process::exit(1);
                     }
                 };

@@ -193,8 +193,7 @@ fn commands_to_json(commands: Vec<Command>) -> Vec<Value> {
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct SubmitTx {
-    pub v1: bool,
-    pub v2: bool,
+    pub is_v1: bool,
     pub commands: Vec<TxCommand>,
     pub nonce: u64,
     pub gas_limit: u64,
@@ -342,7 +341,7 @@ impl SubmitTx {
             }
         }
 
-        if self.v1 {
+        if self.is_v1 {
             Ok(pchain_types::rpc::TransactionV1OrV2::V1(
                 pchain_types::blockchain::TransactionV1::new(
                     &keypair,
@@ -353,7 +352,7 @@ impl SubmitTx {
                     self.priority_fee_per_gas,
                 ),
             ))
-        } else if self.v2 {
+        } else {
             Ok(pchain_types::rpc::TransactionV1OrV2::V2(
                 pchain_types::blockchain::TransactionV2::new(
                     &keypair,
@@ -364,12 +363,6 @@ impl SubmitTx {
                     self.priority_fee_per_gas,
                 ),
             ))
-        } else {
-            println!(
-                "{}",
-                DisplayMsg::IncorrectCombinationOfIdentifiers(String::from("v1, v2"))
-            );
-            std::process::exit(1);
         }
     }
 }

@@ -35,7 +35,6 @@ pub enum DisplayMsg {
     ////////////////////////
     // Cli argument error //
     ///////////////////////
-    IncorrectCombinationOfIdentifiers(CLIArgs),
     IncorrectFormatForSuppliedArgument(ErrorMsg),
 
     ////////////////
@@ -150,8 +149,6 @@ impl fmt::Display for DisplayMsg {
             ////////////////////////
             // Cli argument error //
             ///////////////////////
-            DisplayMsg::IncorrectCombinationOfIdentifiers(identifiers) =>
-                write!(f, "Error: Invalid combination of input. Please specify a correct identifier (\"{}\" ).", identifiers),
             DisplayMsg::IncorrectFormatForSuppliedArgument(error) =>
             write!(f, "Error: Supplied Argument is of incorrect format. It should be in form of (\"{}\" ).", error),
 

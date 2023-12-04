@@ -54,7 +54,7 @@ pub async fn match_submit_subcommand(tx_subcommand: Transaction, config: Config)
         Transaction::Create {
             destination,
             v1,
-            v2,
+            v2: _,
             priority_fee_per_gas,
             gas_limit,
             max_base_fee_per_gas,
@@ -64,8 +64,7 @@ pub async fn match_submit_subcommand(tx_subcommand: Transaction, config: Config)
             let command = subcommand_parser(create_tx_subcommand);
 
             let tx = SubmitTx {
-                v1,
-                v2,
+                is_v1: v1,
                 commands: vec![command],
                 nonce,
                 gas_limit,

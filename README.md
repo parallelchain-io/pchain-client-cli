@@ -5,7 +5,7 @@ For a detailed description of all available commands, execute `pchain_client --h
 
 ## Usage 
 ```sh
-ParallelChain Client CLI 0.4.4
+ParallelChain Client CLI 0.5.0
 <ParallelChain Lab>
 ParallelChain client (`pchain_client`) is a command-line tool for you to connect and interact with
 the ParallelChain Mainnet/Testnet.
@@ -156,7 +156,7 @@ Here are some CLI subcommands to indicate corresponding [Protocol Transaction Co
 pchain_client transaction create --help
 ```
 
-First, provide the following 4 parameters:
+First, provide the following 4 parameters and :
 ```sh
 pchain_client transaction create \
   --nonce <NONCE> \
@@ -286,11 +286,13 @@ Smart contracts are computer programs that are stored on a blockchain. You need 
 ### Retrieve Contract Address
 After you deploy contract in a transaction, you should receive the contract address together with transaction hash. What if you want to deploy contract and call method in the SAME transaction, it is possible to compute the contract address in advance.
 
-You need to provide the account address and nonce when deploying contract.
+You need to provide the account address and nonce when deploying contract, as well as the index of the deploy command in the transaction if you are submitting TransactionV2.
 
 Command:
 ```sh
-pchain_client parse contract-address --address <ADDRESS> --nonce <NONCE>
+pchain_client parse contract-address v1 --address <ADDRESS> --nonce <NONCE>
+
+pchain_client parse contract-address v2 --address <ADDRESS> --nonce <NONCE> --deploy_cmd_index <INDEX>
 ```
 
 ### Prepare Contract Method Arguments File
