@@ -114,7 +114,7 @@ impl From<pchain_types::blockchain::BlockHeaderV2> for BlockHeader {
             justify: From::<hotstuff_rs::types::QuorumCertificate>::from(blockheader.justify),
             data_hash: base64url::encode(blockheader.data_hash),
             block_hash: base64url::encode(blockheader.hash),
-            txs_hash: base64url::encode(blockheader.hash),
+            txs_hash: base64url::encode(blockheader.txns_hash),
             state_hash: base64url::encode(blockheader.state_hash),
             receipts_hash: base64url::encode(blockheader.receipts_hash),
             proposer: base64url::encode(blockheader.proposer),
