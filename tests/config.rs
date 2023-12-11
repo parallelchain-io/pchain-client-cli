@@ -1,7 +1,7 @@
-use std::process::Command;
 use serial_test::serial;
+use std::process::Command;
 
-use crate::common::{TestEnv, expect_output};
+use crate::common::{expect_output, TestEnv};
 
 mod common;
 
@@ -13,15 +13,16 @@ mod common;
 fn test_pchain_client() {
     let env = TestEnv::new();
 
-    let output = Command::new(&env.bin)
-        .output()
-        .unwrap();
+    let output = Command::new(&env.bin).output().unwrap();
     let output = String::from_utf8_lossy(&output.stderr).to_string();
 
-    expect_output(&[
-        &format!("ParallelChain Client CLI {}", env!("CARGO_PKG_VERSION")),
-        "USAGE:",
-    ], &output)
+    expect_output(
+        &[
+            &format!("ParallelChain Client CLI {}", env!("CARGO_PKG_VERSION")),
+            "USAGE:",
+        ],
+        &output,
+    )
     .unwrap();
 }
 
@@ -33,20 +34,13 @@ fn test_pchain_client() {
 fn test_config() {
     let env = TestEnv::new();
 
-    let output = Command::new(&env.bin)
-        .arg("config")
-        .output()
-        .unwrap();
+    let output = Command::new(&env.bin).arg("config").output().unwrap();
     let output = String::from_utf8_lossy(&output.stderr).to_string();
 
-    expect_output(&[
-        "pchain_client-config",
-        "USAGE:",
-    ], &output)
-    .unwrap();
+    expect_output(&["pchain_client-config", "USAGE:"], &output).unwrap();
 }
 
-/// - Case:     User lists RPC url configuration config 
+/// - Case:     User lists RPC url configuration config
 /// - Expect:   display RPC url configuration (empty)
 /// - Command:  ./pchain_client config list
 #[test]
@@ -63,7 +57,7 @@ fn test_config_list() {
     assert!(output.is_empty());
 }
 
-/// - Case:     User setups RPC url configuration config 
+/// - Case:     User setups RPC url configuration config
 /// - Expect:   RPC url is set to configuration
 /// - Command:  
 ///   - ./pchain_client config setup
@@ -79,12 +73,8 @@ fn test_config_setup() {
         .output()
         .unwrap();
     let output = String::from_utf8_lossy(&output.stderr).to_string();
-    
-    expect_output(&[
-        "pchain_client-config-setup",
-        "USAGE:",
-    ], &output)
-    .unwrap();
+
+    expect_output(&["pchain_client-config-setup", "USAGE:"], &output).unwrap();
 
     let output = Command::new(&env.bin)
         .arg("config")
@@ -95,9 +85,10 @@ fn test_config_setup() {
         .unwrap();
     let output = String::from_utf8_lossy(&output.stdout).to_string();
 
-    expect_output(&[
-        "Fullnode RPC Provider is <https://pchain-test-rpc02.parallelchain.io>",
-    ], &output)
+    expect_output(
+        &["Fullnode RPC Provider is <https://pchain-test-rpc02.parallelchain.io>"],
+        &output,
+    )
     .unwrap();
 
     let output = Command::new(&env.bin)
@@ -107,11 +98,9 @@ fn test_config_setup() {
         .unwrap();
     let output = String::from_utf8_lossy(&output.stdout).to_string();
 
-    expect_output(&[
-        "Fullnode RPC Provider is <https://pchain-test-rpc02.parallelchain.io>",
-    ], &output)
+    expect_output(
+        &["Fullnode RPC Provider is <https://pchain-test-rpc02.parallelchain.io>"],
+        &output,
+    )
     .unwrap();
-
 }
-
-

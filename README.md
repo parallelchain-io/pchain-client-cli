@@ -5,7 +5,7 @@ For a detailed description of all available commands, execute `pchain_client --h
 
 ## Usage 
 ```sh
-ParallelChain Client CLI 0.4.4
+ParallelChain Client CLI 0.5.0
 <ParallelChain Lab>
 ParallelChain client (`pchain_client`) is a command-line tool for you to connect and interact with
 the ParallelChain Mainnet/Testnet.
@@ -156,16 +156,17 @@ Here are some CLI subcommands to indicate corresponding [Protocol Transaction Co
 pchain_client transaction create --help
 ```
 
-First, provide the following 4 parameters:
+First, provide the following 4 parameters and specify the version of the transaction:
 ```sh
 pchain_client transaction create \
   --nonce <NONCE> \
   --gas-limit <GAS_LIMIT> \
   --max-base-fee-per-gas <MAX_BASE_FEE_PER_GAS> \
   --priority-fee-per-gas <PRIORITY_FEE_PER_GAS> \
+  <--v1|--v2>
 ...
 ```
-Then, decide the transaction type using the [CLI subcommand](#prepare-transaction-file). Each of them takes different inputs. You can always check help menu using `--help`.
+Then, decide the command type using the [CLI subcommand](#prepare-transaction-file). Each of them takes different inputs. You can always check help menu using `--help`.
 
 Make sure you provide both `Parameters` and `Subcommand` parts in one command. The output transaction file (tx.json) will be saved in the current directory. You can also specify the designated file with the flag `--destination`
 
@@ -177,6 +178,7 @@ pchain_client transaction create \
   --gas-limit 100000 \
   --max-base-fee-per-gas 8 \
   --priority-fee-per-gas 0 \
+  --v1
   transfer \
     --recipient kRPL8cXI73DNgVSSQz9WfIi-mAAvFvdXKfZ9UPBEv_A \
     --amount 100
@@ -189,6 +191,7 @@ pchain_client transaction create \
   --gas-limit 100000 \
   --max-base-fee-per-gas 8 \
   --priority-fee-per-gas 0 \
+  --v1
   deploy \
     --contract-code /home/document/code.wasm \
     --cbi-version 0
@@ -286,11 +289,13 @@ Smart contracts are computer programs that are stored on a blockchain. You need 
 ### Retrieve Contract Address
 After you deploy contract in a transaction, you should receive the contract address together with transaction hash. What if you want to deploy contract and call method in the SAME transaction, it is possible to compute the contract address in advance.
 
-You need to provide the account address and nonce when deploying contract.
+You need to provide the account address and nonce when deploying contract, as well as the index of the deploy command in the transaction if you are submitting TransactionV2.
 
 Command:
 ```sh
-pchain_client parse contract-address --address <ADDRESS> --nonce <NONCE>
+pchain_client parse contract-address v1 --address <ADDRESS> --nonce <NONCE>
+
+pchain_client parse contract-address v2 --address <ADDRESS> --nonce <NONCE> --deploy_cmd_index <INDEX>
 ```
 
 ### Prepare Contract Method Arguments File

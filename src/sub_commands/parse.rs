@@ -8,7 +8,7 @@
 use serde_json::Value;
 
 use crate::{
-    command::Parse,
+    command::{ContractAddressVersion, Parse},
     display_msg::DisplayMsg,
     parser::{
         base64url_to_public_address, parse_call_result_from_data_type,
@@ -29,40 +29,30 @@ pub fn match_parse_subcommand(parse_subcommand: Parse) {
             decode,
             value,
         } => {
-            // if one and only one of the encode / decode argument is true
-            if encode ^ decode {
-                if encode {
-                    match serde_json::from_str::<Vec<u8>>(&value) {
-                        Ok(d) => println!("{}", base64url::encode(d)),
-                        Err(_) => {
-                            println!(
-                                "{}",
-                                DisplayMsg::IncorrectFormatForSuppliedArgument(String::from(
-                                    "vector"
-                                ))
-                            );
-                        }
-                    };
-                }
-
-                if decode {
-                    match base64url::decode(&value) {
-                        Ok(d) => println!("{:?}", d),
-                        Err(e) => println!(
+            if encode {
+                match serde_json::from_str::<Vec<u8>>(&value) {
+                    Ok(d) => println!("{}", base64url::encode(d)),
+                    Err(_) => {
+                        println!(
                             "{}",
-                            DisplayMsg::FailToDecodeBase64String(
-                                String::from("provided string"),
-                                value,
-                                e.to_string()
-                            )
-                        ),
-                    };
-                }
-            } else {
-                println!(
-                    "{}",
-                    DisplayMsg::IncorrectCombinationOfIdentifiers(String::from("encode, decode"))
-                );
+                            DisplayMsg::IncorrectFormatForSuppliedArgument(String::from("vector"))
+                        );
+                    }
+                };
+            }
+
+            if decode {
+                match base64url::decode(&value) {
+                    Ok(d) => println!("{:?}", d),
+                    Err(e) => println!(
+                        "{}",
+                        DisplayMsg::FailToDecodeBase64String(
+                            String::from("provided string"),
+                            value,
+                            e.to_string()
+                        )
+                    ),
+                };
             }
         }
 
@@ -127,27 +117,47 @@ pub fn match_parse_subcommand(parse_subcommand: Parse) {
                 }
             }
         }
-        Parse::ContractAddress { address, nonce } => {
-            match base64url_to_public_address(&address) {
-                Ok(sender_address) => println!(
-                    "Contract Address: {}",
-                    base64url::encode(pchain_types::cryptography::contract_address(
-                        &sender_address,
-                        nonce
-                    ))
-                ),
-                Err(_) => {
-                    println!(
-                        "{}",
-                        DisplayMsg::FailToDecodeBase64Address(
-                            String::from("address"),
-                            address,
-                            String::new()
+        Parse::ContractAddress { version } => match version {
+            ContractAddressVersion::V1 { address, nonce } => {
+                match base64url_to_public_address(&address) {
+                    Ok(sender_address) => {
+                        println!(
+                            "Contract Address: {}",
+                            base64url::encode(pchain_types::cryptography::contract_address_v1(
+                                &sender_address,
+                                nonce
+                            ))
                         )
-                    );
-                }
-            };
-        }
+                    }
+                    Err(e) => {
+                        println!("{}", e);
+                        std::process::exit(1);
+                    }
+                };
+            }
+            ContractAddressVersion::V2 {
+                address,
+                nonce,
+                index,
+            } => {
+                match base64url_to_public_address(&address) {
+                    Ok(sender_address) => {
+                        println!(
+                            "Contract Address: {}",
+                            base64url::encode(pchain_types::cryptography::contract_address_v2(
+                                &sender_address,
+                                nonce,
+                                index
+                            ))
+                        )
+                    }
+                    Err(e) => {
+                        println!("{}", e);
+                        std::process::exit(1);
+                    }
+                };
+            }
+        },
     };
     std::process::exit(1);
 }

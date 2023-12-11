@@ -3,7 +3,7 @@
     Licensed under the Apache License, Version 2.0: http://www.apache.org/licenses/LICENSE-2.0
 */
 
-use pchain_types::rpc::SubmitTransactionError;
+use pchain_types::rpc::SubmitTransactionErrorV2;
 use std::{fmt, path::PathBuf};
 
 use crate::command::{Base64Address, Base64Hash, Base64String};
@@ -35,7 +35,6 @@ pub enum DisplayMsg {
     ////////////////////////
     // Cli argument error //
     ///////////////////////
-    IncorrectCombinationOfIdentifiers(CLIArgs),
     IncorrectFormatForSuppliedArgument(ErrorMsg),
 
     ////////////////
@@ -56,7 +55,7 @@ pub enum DisplayMsg {
     // Transaction Msg //
     /////////////////////
     SuccessSubmitTx,
-    FailSubmitTx(SubmitTransactionError),
+    FailSubmitTx(SubmitTransactionErrorV2),
     FailToParseCallArguments(ErrorMsg),
     FailToParseCallResult(ErrorMsg),
     InvalidTxCommand(ErrorMsg),
@@ -139,7 +138,7 @@ impl fmt::Display for DisplayMsg {
             DisplayMsg::FailToUTF8DecodeFile(file_name, path, error) =>
                 write!(f, "Error: Provided {file_name} file at {:?} is not utf8 decodable. {error}", path),
             DisplayMsg::InvalidTOMLFormat(file_name, path, error) =>
-                write!(f, "Error: Provided {file_name} file at {:?} is not correct toml format. {error}", path),
+                write!(f, "Error: Provided {file_name} file at {:?} is not in correct toml format. {error}", path),
             DisplayMsg::FailToTOMLEncode(file_name, path, error) =>
                 write!(f, "Error: Cannot encode {file_name} file at {:?} to toml format. {error}", path),
             DisplayMsg::FailToEncodeJson(file_name, path, error) =>
@@ -150,34 +149,32 @@ impl fmt::Display for DisplayMsg {
             ////////////////////////
             // Cli argument error //
             ///////////////////////
-            DisplayMsg::IncorrectCombinationOfIdentifiers(identifiers) =>
-                write!(f, "Error: Invalid combination of input. Please specify a correct identifier (\"{}\" ).", identifiers),
             DisplayMsg::IncorrectFormatForSuppliedArgument(error) =>
-            write!(f, "Error: Supplied Argument is of incorrect format. It should be in form of (\"{}\" ).", error),
+            write!(f, "Error: Supplied argument is of incorrect format. It should be in form of (\"{}\" ).", error),
 
             ////////////////
             // Query Msg //
             ///////////////
             DisplayMsg::CannotFindLatestBlock =>
-                write!(f, "Error: Cannot find find latest block."),
+                write!(f, "Error: Cannot find latest block."),
             DisplayMsg::CannotFindRelevantBlock =>
-                write!(f, "Cannot find relevant block."),
+                write!(f, "Error: Cannot find relevant block."),
             DisplayMsg::CannotFindRelevantBlockHeader =>
-                write!(f, "Cannot find relevant block header"),
+                write!(f, "Error: Cannot find relevant block header"),
             DisplayMsg::CannotFindRelevantTransaction =>
-                write!(f, "Cannot find relevant transaction."),
+                write!(f, "Error: Cannot find relevant transaction."),
             DisplayMsg::CannotFindRelevantReceipt =>
-                write!(f, "Cannot find relevant receipt."),
+                write!(f, "Error: Cannot find relevant receipt."),
             DisplayMsg::CannotFindRelevantState =>
-                write!(f, "Cannot find relevant state."),
+                write!(f, "Error: Cannot find relevant state."),
             DisplayMsg::CannotFindOperator =>
-                write!(f, "Cannot find relevant operator."),
+                write!(f, "Error: Cannot find relevant operator."),
             DisplayMsg::CannotFindOperatorOwnerPair =>
-                write!(f, "Cannot find relevant operator owner pair."),
+                write!(f, "Error: Cannot find relevant operator-owner pair."),
             DisplayMsg::CannotFindValidatorSet =>
-                write!(f, "No validator set exists at the requested time frame."),
+                write!(f, "Error: No validator set exists at the requested time frame."),
             DisplayMsg::CannotFindRelevantContractCode =>
-                write!(f, "No contract code is associated with this address."),
+                write!(f, "Error: No contract code is associated with this address."),
 
             /////////////////////
             // Transaction Msg //
@@ -186,10 +183,12 @@ impl fmt::Display for DisplayMsg {
                 write!(f, "Transaction is submitted to ParallelChain but not completely get through yet. Check explorer or wallet for updated status."),
             DisplayMsg::FailSubmitTx(error) => {
                 match error {
-                    SubmitTransactionError::MempoolFull => write!(f, "Error: Submit Transation Fail. Mempool is full."),
-                    SubmitTransactionError::UnacceptableNonce => write!(f, "Error: Submit Transation Fail. Nonce is not within acceptable range."),
-                    SubmitTransactionError::Other => write!(f, "Error: Submit Transation Fail. Please ensure gas limit, base fee or transaction size is within range."),
-                }
+                    SubmitTransactionErrorV2::NonceLTCommitted => write!(f, "Error: Submit Transaction Fail. Nonce is lower than the committed nonce."),
+                    SubmitTransactionErrorV2::BaseFeePerGasTooLow => write!(f, "Error: Submit Transaction Fail. Base fee is too low."),
+                    SubmitTransactionErrorV2::MempoolIsFull => write!(f, "Error: Submit Transaction Fail. Mempool is full."),
+                    SubmitTransactionErrorV2::TransactionVersionTooOld => write!(f, "Error: Submit Transaction Fail. Transaction version is too old."),
+                    SubmitTransactionErrorV2::Other => write!(f, "Error: Submit Transaction Fail. Please ensure gas limit, nonce, or transaction size is within range."),
+                    }
             },
             DisplayMsg::FailToParseCallArguments(e) =>
                 write!(f, "Error: Cannot parse contract call arguments of the transaction. {}", e),
@@ -225,19 +224,19 @@ impl fmt::Display for DisplayMsg {
             DisplayMsg::InvalidEd25519Keypair(error) =>
                 write!(f, "Error: Invalid Ed25519 keypair. {error}"),
             DisplayMsg::ParseKeypairFailure(serde_json::Error{ .. }) =>
-                write!(f, "Error: keypair json is corrupted. Please backup the keypair.json and use command) 
+                write!(f, "Error: keypair.json is corrupted. Please backup the keypair.json and use command: 
             `./pchain_client keys add --private-key <PRIVATE_KEY> --public-key <PUBLIC_KEY> --name <NAME>` to re-import your keys"),
             DisplayMsg::FailToSignMessage(error) =>
-                write!(f, "Fail to sign message by provided keypair. {error}"),
+                write!(f, "Error: Fail to sign message by provided keypair. {error}"),
             /////////////////
             // File IO Msg //
             /////////////////
             DisplayMsg::IncorrectFilePath(file_name, path, error) =>
                 write!(f, "Error: Invalid path. Cannot retrieve designated {file_name} file from the designated path at <{:?}>. {:#?}", path, error),
             DisplayMsg::FailToOpenOrReadFile(file_name, path, error) =>
-                write!(f, "Error: Failed to read {file_name} file at <{:?}> although file is found. {:#?}", path, error),
+                write!(f, "Error: Fail to read {file_name} file at <{:?}> although file is found. {:#?}", path, error),
             DisplayMsg::FailToWriteFile(file_name, path, error) =>
-                write!(f, "Error: Failed to write {file_name} file at <{:?}> although file is found. {:#?}", path, error),
+                write!(f, "Error: Fail to write {file_name} file at <{:?}> although file is found. {:#?}", path, error),
             DisplayMsg::FailToCreateDir(file_name, path, error) =>
                 write!(f, "Error: Fail to create necessary directory for {file_name} file at <{:?}>. {:#?}", path, error),
             DisplayMsg::FailToCreateFile(file_name, path, error) =>
@@ -258,19 +257,19 @@ impl fmt::Display for DisplayMsg {
             // Password Msg //
             //////////////////
             DisplayMsg::WrongPassword =>
-                write!(f, "Wrong password. Fail to login."),
+                write!(f, "Error: Wrong password. Fail to login."),
             DisplayMsg::PasswordFilesContaminated =>
-                write!(f, "Irrecoverable error. Password files contaminted."),
+                write!(f, "Error: Irrecoverable error. Password files contaminted."),
             DisplayMsg::PasswordNotMatch =>
-                write!(f, "Password not match"),
+                write!(f, "Error: Password not match"),
             DisplayMsg::SuccessSetupPassword =>
-                write!(f, "Password is set. Please keep your password safe. You will require to provide this password to submit transaction and manage keypairs later."),
+                write!(f, "Password is set. Please keep your password safe. You will be required to provide this password to submit transaction and manage keypairs later."),
             DisplayMsg::FailToSetupPassword(error) =>
-                write!(f, "Fail to setup your password. {:#?}", error),
+                write!(f, "Error: Fail to setup your password. {:#?}", error),
             DisplayMsg::FailtoEncrypt(error) =>
-                write!(f, "Fail to encrypt data. {:#?}", error),
+                write!(f, "Error: Fail to encrypt data. {:#?}", error),
             DisplayMsg::FailtoDecrypt(error) =>
-                write!(f, "Fail to decrypt data. {:#?}", error),
+                write!(f, "Error: Fail to decrypt data. {:#?}", error),
 
             /////////////////
             // Parser Msg  //

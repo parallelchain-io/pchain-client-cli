@@ -5,6 +5,7 @@
 
 //! Definition of methods related to serde serializable/deserializable version of  `pchain_types::Keypair`.
 
+use std::convert::TryInto;
 use std::{fs::File, path::PathBuf};
 
 use crate::config::{get_home_dir, get_keypair_path};
@@ -137,14 +138,15 @@ pub fn generate_keypair(keypair_name: &str) -> KeypairJSON {
     let mut chacha20_rng = ChaCha20Rng::from_rng(&mut osrng).unwrap();
     let keypair = pchain_types::cryptography::Keypair::generate(&mut chacha20_rng);
 
-    let secret = keypair.secret.as_bytes();
-    let public = keypair.public.as_bytes();
+    let secret = keypair.as_bytes();
+    let verifying = keypair.verifying_key();
+    let public = verifying.as_bytes();
 
     KeypairJSON {
         name: keypair_name.to_string(),
         private_key: base64url::encode(secret),
         public_key: base64url::encode(public),
-        keypair: base64url::encode(keypair.to_bytes()),
+        keypair: base64url::encode(keypair.to_keypair_bytes()),
     }
 }
 
@@ -182,16 +184,18 @@ pub fn add_keypair(
 
     // Concatenate two keys together
     sender_private_key.append(&mut sender_public_key);
-    let keypair: ed25519_dalek::Keypair =
-        match ed25519_dalek::Keypair::from_bytes(&sender_private_key[..]) {
-            Ok(k) => k,
-            Err(e) => panic!("{}", DisplayMsg::InvalidEd25519Keypair(e.to_string())),
-        };
+    let signature_bytes: pchain_types::cryptography::SignatureBytes =
+        sender_private_key.clone().try_into().unwrap();
+
+    let keypair = match ed25519_dalek::SigningKey::from_keypair_bytes(&signature_bytes) {
+        Ok(k) => k,
+        Err(e) => panic!("{}", DisplayMsg::InvalidEd25519Keypair(e.to_string())),
+    };
 
     Ok(KeypairJSON {
         public_key: String::from(public_key),
         private_key: String::from(private_key),
-        keypair: base64url::encode(keypair.to_bytes()),
+        keypair: base64url::encode(keypair.to_keypair_bytes()),
         name: name.to_string(),
     })
 }

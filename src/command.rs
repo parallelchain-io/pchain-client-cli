@@ -7,7 +7,7 @@
 
 use std::path::PathBuf;
 
-use clap::{Parser, Subcommand};
+use clap::{ArgGroup, Parser, Subcommand};
 
 pub type Base64Address = String;
 pub type Base64Hash = String;
@@ -56,27 +56,37 @@ pub(crate) enum PChainCLI {
 #[derive(Debug, Subcommand)]
 pub enum Transaction {
     /// Create new Transaction with command and save to a JSON file.
+    /// You are required to specify the transaction version.
     #[clap(display_order = 1)]
+    #[clap(group(ArgGroup::new("version").required(true).multiple(false).args(&["v1", "v2"])))]
     Create {
         /// [Optional] Destination path of the output Transaction file. If not provided, default save file to current directory with filename `tx.json`.
         /// File with same name will be OVERWRITTEN. Directory provided has to exist.
         #[clap(long = "destination", display_order = 1)]
         destination: Option<String>,
 
+        /// [One of] Specify this flag when submitting TransactionV1.
+        #[clap(long = "v1", display_order = 2)]
+        v1: bool,
+
+        /// [One of] Specify this flag when submitting TransactionV2.
+        #[clap(long = "v2", display_order = 3)]
+        v2: bool,
+
         /// Number of Transactions originating from the Account so far in the ParallelChain network.
-        #[clap(long = "nonce", display_order = 1)]
+        #[clap(long = "nonce", display_order = 4)]
         nonce: u64,
 
         /// The maximum number of gas units that can be used in executing this transaction.
-        #[clap(long = "gas-limit", display_order = 2)]
+        #[clap(long = "gas-limit", display_order = 5)]
         gas_limit: u64,
 
         /// The maximum number of Grays that you are willing to burn for the gas unit used in this transaction.
-        #[clap(long = "max-base-fee-per-gas", display_order = 3)]
+        #[clap(long = "max-base-fee-per-gas", display_order = 6)]
         max_base_fee_per_gas: u64,
 
         /// The number of Grays that you are willing to pay the block proposer for including this transaction in a block.
-        #[clap(long = "priority-fee-per-gas", display_order = 4)]
+        #[clap(long = "priority-fee-per-gas", display_order = 7)]
         priority_fee_per_gas: u64,
 
         #[clap(subcommand)]
@@ -168,6 +178,7 @@ pub enum Query {
     /// Query block information. Search the block either by block height, block hash or tx hash.
     /// You are required to specify one of the optional parameter.
     #[clap(arg_required_else_help = true, display_order = 6)]
+    #[clap(group(ArgGroup::new("block").required(true).multiple(false).args(&["block-height", "block-hash", "tx-hash", "latest"])))]
     Block {
         /// [Optional] Block height of the Block you'd like to query.
         #[clap(long = "block-height", display_order = 1)]
@@ -189,6 +200,7 @@ pub enum Query {
     /// Query block header only. Search the block either by block height, block hash or tx hash.
     /// You are required to specify one of the optional parameter.
     #[clap(arg_required_else_help = true, display_order = 7)]
+    #[clap(group(ArgGroup::new("blockheader").required(true).multiple(false).args(&["block-height", "block-hash", "tx-hash", "latest"])))]
     BlockHeader {
         /// [Optional] Block height of the Block you'd like to query.
         #[clap(long = "block-height", display_order = 1)]
@@ -341,6 +353,7 @@ pub enum Keys {
 pub enum Parse {
     /// Encode / decode the provided array / string
     #[clap(arg_required_else_help = true, display_order = 1)]
+    #[clap(group(ArgGroup::new("encoding").required(true).multiple(false).args(&["encode", "decode"])))]
     Base64Encoding {
         /// [One Of] Base64 Encode Mode: encode array to Base64 string
         #[clap(long = "encode", display_order = 1)]
@@ -392,13 +405,8 @@ pub enum Parse {
     /// Compute the contract address of a Contract in transaction.
     #[clap(arg_required_else_help = true, display_order = 3)]
     ContractAddress {
-        /// Address of the signer account.
-        #[clap(long = "address", display_order = 1, allow_hyphen_values(true))]
-        address: Base64Address,
-
-        /// Nonce of the signer account when deploying the contract.
-        #[clap(long = "nonce", display_order = 2)]
-        nonce: u64,
+        #[clap(subcommand)]
+        version: ContractAddressVersion,
     },
 }
 
@@ -431,6 +439,37 @@ pub enum Validators {
         /// [Optional] Include delegator set in result.
         #[clap(long = "with-delegator", display_order = 1)]
         with_delegator: bool,
+    },
+}
+
+#[derive(Debug, Subcommand)]
+pub enum ContractAddressVersion {
+    /// Parse the first version of contract address which is defined in ParallelChain Protocol V0.4.
+    #[clap(arg_required_else_help = false, display_order = 1)]
+    V1 {
+        /// Address of the signer account.
+        #[clap(long = "address", display_order = 3, allow_hyphen_values(true))]
+        address: Base64Address,
+
+        /// Nonce of the signer account when deploying the contract.
+        #[clap(long = "nonce", display_order = 4)]
+        nonce: u64,
+    },
+
+    /// Parse the first version of contract address which is defined in ParallelChain Protocol V0.5.
+    #[clap(arg_required_else_help = false, display_order = 2)]
+    V2 {
+        /// Address of the signer account.
+        #[clap(long = "address", display_order = 3, allow_hyphen_values(true))]
+        address: Base64Address,
+
+        /// Nonce of the signer account when deploying the contract.
+        #[clap(long = "nonce", display_order = 4)]
+        nonce: u64,
+
+        /// Index of the deploy command in the transaction.
+        #[clap(long = "deploy_cmd_index", display_order = 5)]
+        index: u32,
     },
 }
 
