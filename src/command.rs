@@ -111,7 +111,7 @@ pub enum Transaction {
 
         /// Name of the keypair. You can use existing keypair or generate new keypair with your preferred name using `./pchain_client keys create --name <NAME>`.
         /// This is used to sign the transaction as it proves 'you' are authorized to make this transaction.
-        #[clap(long = "keypair-name", display_order = 6)]
+        #[clap(long = "keypair-name", display_order = 2)]
         keypair_name: String,
     },
 }
@@ -448,11 +448,11 @@ pub enum ContractAddressVersion {
     #[clap(arg_required_else_help = false, display_order = 1)]
     V1 {
         /// Address of the signer account.
-        #[clap(long = "address", display_order = 3, allow_hyphen_values(true))]
+        #[clap(long = "address", display_order = 1, allow_hyphen_values(true))]
         address: Base64Address,
 
         /// Nonce of the signer account when deploying the contract.
-        #[clap(long = "nonce", display_order = 4)]
+        #[clap(long = "nonce", display_order = 2)]
         nonce: u64,
     },
 
@@ -460,15 +460,15 @@ pub enum ContractAddressVersion {
     #[clap(arg_required_else_help = false, display_order = 2)]
     V2 {
         /// Address of the signer account.
-        #[clap(long = "address", display_order = 3, allow_hyphen_values(true))]
+        #[clap(long = "address", display_order = 1, allow_hyphen_values(true))]
         address: Base64Address,
 
         /// Nonce of the signer account when deploying the contract.
-        #[clap(long = "nonce", display_order = 4)]
+        #[clap(long = "nonce", display_order = 2)]
         nonce: u64,
 
         /// Index of the deploy command in the transaction.
-        #[clap(long = "deploy_cmd_index", display_order = 5)]
+        #[clap(long = "deploy_cmd_index", display_order = 3)]
         index: u32,
     },
 }
