@@ -456,7 +456,7 @@ pub enum ContractAddressVersion {
         nonce: u64,
     },
 
-    /// Parse the first version of contract address which is defined in ParallelChain Protocol V0.5.
+    /// Parse the second version of contract address which is defined in ParallelChain Protocol V0.5.
     #[clap(arg_required_else_help = false, display_order = 2)]
     V2 {
         /// Address of the signer account.
