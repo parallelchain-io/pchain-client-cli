@@ -79,8 +79,8 @@ fn test_keys_create() {
 /// - Case:     User import a keypair, and then export the keypair
 /// - Expect:   Keypair can be imported. The same keypair can be exported to a file.
 /// - Command:  
-///     - ./pchain_client keys import --public <PUBLIC> --private <PRIVATE> --keypair-name <NAME>
-///     - ./pchain_client keys export --keypair-name <NAME> --destination <DESTINATION>
+///     - ./pchain_client keys import --public <PUBLIC> --private <PRIVATE> --keypair-name <KEYPAIR_NAME>
+///     - ./pchain_client keys export --keypair-name <KEYPAIR_NAME> --destination <DESTINATION>
 #[test]
 #[serial]
 fn test_keys_import_export() {

@@ -109,7 +109,7 @@ pub enum Transaction {
         #[clap(long = "file", display_order = 1)]
         file: String,
 
-        /// Name of the keypair. You can use existing keypair or generate new keypair with your preferred name using `./pchain_client keys create --keypair-name <NAME>`.
+        /// Name of the keypair. You can use existing keypair or generate new keypair with your preferred name using `./pchain_client keys create --keypair-name <KEYPAIR_NAME>`.
         /// This is used to sign the transaction as it proves 'you' are authorized to make this transaction.
         #[clap(long = "keypair-name", display_order = 2)]
         keypair_name: String,
