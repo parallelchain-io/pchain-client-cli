@@ -109,7 +109,7 @@ pub enum Transaction {
         #[clap(long = "file", display_order = 1)]
         file: String,
 
-        /// Name of the keypair. You can use existing keypair or generate new keypair with your preferred name using `./pchain_client keys create --name <NAME>`.
+        /// Name of the keypair. You can use existing keypair or generate new keypair with your preferred name using `./pchain_client keys create --keypair-name <NAME>`.
         /// This is used to sign the transaction as it proves 'you' are authorized to make this transaction.
         #[clap(long = "keypair-name", display_order = 2)]
         keypair_name: String,
@@ -303,8 +303,8 @@ pub enum Keys {
     #[clap(display_order = 2)]
     Create {
         /// [Optional] The name to identify the Keypair that you are generating.
-        #[clap(long = "name", display_order = 1)]
-        name: Option<String>,
+        #[clap(long = "keypair-name", display_order = 1)]
+        keypair_name: Option<String>,
     },
 
     /// Import an existing keypair.
@@ -319,16 +319,16 @@ pub enum Keys {
         public_key: Base64Address,
 
         /// The name to identify the Keypair.
-        #[clap(long = "name", display_order = 3, allow_hyphen_values(true))]
-        name: String,
+        #[clap(long = "keypair-name", display_order = 3, allow_hyphen_values(true))]
+        keypair_name: String,
     },
 
     /// Export existing keypair to JSON file
     #[clap(arg_required_else_help = true, display_order = 4)]
     Export {
         /// The name to identify the Keypair.
-        #[clap(long = "name", display_order = 1)]
-        name: String,
+        #[clap(long = "keypair-name", display_order = 1)]
+        keypair_name: String,
 
         /// [Optional] Destination path of the output transaction file. If not provided, default save json file to current directory with filename of the keypair name.
         /// File with same name will be OVERWRITTEN. Directory provided has to exist.
@@ -344,8 +344,8 @@ pub enum Keys {
         message: String,
 
         /// The name to identify the Keypair.
-        #[clap(long = "name", display_order = 2)]
-        name: String,
+        #[clap(long = "keypair-name", display_order = 2)]
+        keypair_name: String,
     },
 }
 

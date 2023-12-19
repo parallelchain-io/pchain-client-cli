@@ -47,8 +47,8 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
                 }
             }
         }
-        Keys::Create { name } => {
-            let name = name.unwrap_or_else(utils::get_random_string);
+        Keys::Create { keypair_name } => {
+            let name = keypair_name.unwrap_or_else(utils::get_random_string);
             let keypair = generate_keypair(&name);
             let public_key = keypair.public_key.clone();
 
@@ -63,9 +63,9 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
         Keys::Import {
             private_key,
             public_key,
-            name,
+            keypair_name,
         } => {
-            let keypair = match add_keypair(&private_key, &public_key, &name) {
+            let keypair = match add_keypair(&private_key, &public_key, &keypair_name) {
                 Ok(kp) => kp,
                 Err(e) => {
                     println!("{}", e);
@@ -77,10 +77,10 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
                 std::process::exit(1);
             }
 
-            println!("{}", DisplayMsg::SuccessAddKey(name));
+            println!("{}", DisplayMsg::SuccessAddKey(keypair_name));
         }
-        Keys::Sign { message, name } => {
-            let keypair = match get_keypair_from_json(config::get_keypair_path(), &name) {
+        Keys::Sign { message, keypair_name } => {
+            let keypair = match get_keypair_from_json(config::get_keypair_path(), &keypair_name) {
                 Ok(Some(kp)) => {
                     let keypair_bs = match base64url::decode(&kp.keypair) {
                         Ok(kp) => kp,
@@ -89,7 +89,7 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
                                 "{}",
                                 DisplayMsg::FailToDecodeBase64String(
                                     String::from("keypair name"),
-                                    name,
+                                    keypair_name,
                                     e.to_string()
                                 )
                             );
@@ -107,7 +107,7 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
                     }
                 }
                 Ok(None) => {
-                    println!("{}", DisplayMsg::KeypairNotFound(name));
+                    println!("{}", DisplayMsg::KeypairNotFound(keypair_name));
                     std::process::exit(1);
                 }
                 Err(e) => {
@@ -130,11 +130,11 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
             println!("Message: {}", message);
             println!("Ciphertext: {}", encoded_ciphertext);
         }
-        Keys::Export { name, destination } => {
-            let keypair = match get_keypair_from_json(config::get_keypair_path(), &name) {
+        Keys::Export { keypair_name, destination } => {
+            let keypair = match get_keypair_from_json(config::get_keypair_path(), &keypair_name) {
                 Ok(Some(kp)) => kp,
                 Ok(None) => {
-                    println!("{}", DisplayMsg::KeypairNotFound(name));
+                    println!("{}", DisplayMsg::KeypairNotFound(keypair_name));
                     std::process::exit(1);
                 }
                 Err(e) => {
@@ -143,7 +143,7 @@ pub fn match_crypto_subcommand(crypto_subcommand: Keys) {
                 }
             };
 
-            let path = std::path::PathBuf::from(destination.unwrap_or(format!("{}.json", name)));
+            let path = std::path::PathBuf::from(destination.unwrap_or(format!("{}.json", keypair_name)));
             match utils::write_file(
                 path.clone(),
                 serde_json::to_string_pretty(&keypair).unwrap().as_bytes(),

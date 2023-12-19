@@ -159,7 +159,7 @@ pub fn generate_keypair(keypair_name: &str) -> KeypairJSON {
 pub fn add_keypair(
     private_key: &str,
     public_key: &str,
-    name: &str,
+    keypair_name: &str,
 ) -> Result<KeypairJSON, DisplayMsg> {
     let mut sender_public_key = match base64url::decode(&public_key) {
         Ok(addr) => addr,
@@ -196,7 +196,7 @@ pub fn add_keypair(
         public_key: String::from(public_key),
         private_key: String::from(private_key),
         keypair: base64url::encode(keypair.to_keypair_bytes()),
-        name: name.to_string(),
+        name: keypair_name.to_string(),
     })
 }
 

@@ -79,8 +79,8 @@ fn test_keys_create() {
 /// - Case:     User import a keypair, and then export the keypair
 /// - Expect:   Keypair can be imported. The same keypair can be exported to a file.
 /// - Command:  
-///     - ./pchain_client keys import --public <PUBLIC> --private <PRIVATE> --name <NAME>
-///     - ./pchain_client keys export --name <NAME> --destination <DESTINATION>
+///     - ./pchain_client keys import --public <PUBLIC> --private <PRIVATE> --keypair_name <NAME>
+///     - ./pchain_client keys export --keypair_name <NAME> --destination <DESTINATION>
 #[test]
 #[serial]
 fn test_keys_import_export() {
@@ -103,7 +103,7 @@ fn test_keys_import_export() {
         .arg(&public)
         .arg("--private")
         .arg(&private)
-        .arg("--name")
+        .arg("--keypair_name")
         .arg("testkey")
         .output()
         .unwrap();
@@ -114,7 +114,7 @@ fn test_keys_import_export() {
     let output = Command::new(&env.bin)
         .arg("keys")
         .arg("export")
-        .arg("--name")
+        .arg("--keypair_name")
         .arg("testkey")
         .arg("--destination")
         .arg(format!("{}", env_export_key_path.to_str().unwrap()))
@@ -135,7 +135,7 @@ fn test_keys_import_export() {
     let exported_keypair: Value =
         serde_json::from_str(&String::from_utf8_lossy(&exported_file)).unwrap();
 
-    assert_eq!(exported_keypair["name"].as_str().unwrap(), "testkey");
+    assert_eq!(exported_keypair["keypair_name"].as_str().unwrap(), "testkey");
     assert_eq!(exported_keypair["public_key"].as_str().unwrap(), &public);
     assert_eq!(exported_keypair["private_key"].as_str().unwrap(), &private);
 }
@@ -161,7 +161,7 @@ fn test_keys_sign() {
         .arg(&public)
         .arg("--private")
         .arg(&private)
-        .arg("--name")
+        .arg("--keypair_name")
         .arg("testkey")
         .output()
         .unwrap();
@@ -174,7 +174,7 @@ fn test_keys_sign() {
         .arg("sign")
         .arg("--message")
         .arg(base64url::encode(&[1u8, 2, 3, 4]))
-        .arg("--name")
+        .arg("--keypair_name")
         .arg("testkey")
         .output()
         .unwrap();

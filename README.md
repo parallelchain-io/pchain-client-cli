@@ -105,13 +105,13 @@ In ParallelChain, an account is identified by the public key of Ed25519 keypair.
 ### Generate New Keypair
 This command generates a set of ed25519_dalek compatible keys. Random name will be set if you do not provide a name.
 ```sh
-pchain_client keys create --name <NAME>
+pchain_client keys create --keypair-name <NAME>
 ```
 
 ### Import Existing Keypair
 If you have already got keys from ParallelChain Explorer, you can import your account keypair with this command. Random name will be set if you do not provide a name.
 ```sh
-pchain_client keys import --private <PRIVATE_KEY> --public <PUBLIC_KEY> --name <NAME>
+pchain_client keys import --private <PRIVATE_KEY> --public <PUBLIC_KEY> --keypair-name <NAME>
 
 // PRIVATE_KEY and PUBLIC_KEY are Base64url encoded Ed25519 keys.
 ```
