@@ -79,8 +79,8 @@ fn test_keys_create() {
 /// - Case:     User import a keypair, and then export the keypair
 /// - Expect:   Keypair can be imported. The same keypair can be exported to a file.
 /// - Command:  
-///     - ./pchain_client keys import --public <PUBLIC> --private <PRIVATE> --name <NAME>
-///     - ./pchain_client keys export --name <NAME> --destination <DESTINATION>
+///     - ./pchain_client keys import --public <PUBLIC> --private <PRIVATE> --keypair-name <KEYPAIR_NAME>
+///     - ./pchain_client keys export --keypair-name <KEYPAIR_NAME> --destination <DESTINATION>
 #[test]
 #[serial]
 fn test_keys_import_export() {
@@ -103,7 +103,7 @@ fn test_keys_import_export() {
         .arg(&public)
         .arg("--private")
         .arg(&private)
-        .arg("--name")
+        .arg("--keypair-name")
         .arg("testkey")
         .output()
         .unwrap();
@@ -114,7 +114,7 @@ fn test_keys_import_export() {
     let output = Command::new(&env.bin)
         .arg("keys")
         .arg("export")
-        .arg("--name")
+        .arg("--keypair-name")
         .arg("testkey")
         .arg("--destination")
         .arg(format!("{}", env_export_key_path.to_str().unwrap()))
@@ -161,7 +161,7 @@ fn test_keys_sign() {
         .arg(&public)
         .arg("--private")
         .arg(&private)
-        .arg("--name")
+        .arg("--keypair-name")
         .arg("testkey")
         .output()
         .unwrap();
@@ -174,7 +174,7 @@ fn test_keys_sign() {
         .arg("sign")
         .arg("--message")
         .arg(base64url::encode(&[1u8, 2, 3, 4]))
-        .arg("--name")
+        .arg("--keypair-name")
         .arg("testkey")
         .output()
         .unwrap();

@@ -220,12 +220,12 @@ impl fmt::Display for DisplayMsg {
             DisplayMsg::KeypairAlreadyExists(keypair_name) =>
                 write!(f, "Error: Keypair with name {keypair_name} already exists."), 
             DisplayMsg::KeypairNotFound(keypair_name) =>
-                write!(f, "Error: Keypair name {keypair_name} provided does not exist. Please generate a keypair by `./pchain_client keys create --name <NAME>`"),
+                write!(f, "Error: Keypair name {keypair_name} provided does not exist. Please generate a keypair by `./pchain_client keys create --keypair-name <KEYPAIR_NAME>`"),
             DisplayMsg::InvalidEd25519Keypair(error) =>
                 write!(f, "Error: Invalid Ed25519 keypair. {error}"),
             DisplayMsg::ParseKeypairFailure(serde_json::Error{ .. }) =>
                 write!(f, "Error: keypair.json is corrupted. Please backup the keypair.json and use command: 
-            `./pchain_client keys add --private-key <PRIVATE_KEY> --public-key <PUBLIC_KEY> --name <NAME>` to re-import your keys"),
+            `./pchain_client keys add --private-key <PRIVATE_KEY> --public-key <PUBLIC_KEY> --keypair-name <KEYPAIR_NAME>` to re-import your keys"),
             DisplayMsg::FailToSignMessage(error) =>
                 write!(f, "Error: Fail to sign message by provided keypair. {error}"),
             /////////////////
