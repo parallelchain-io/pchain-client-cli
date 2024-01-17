@@ -261,7 +261,7 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
             }
         },
         ClientResponse::Contract(result, destination) => match result {
-            Ok(StateResponse {
+            Ok(StateResponseV2::Ok {
                 accounts,
                 storage_tuples: _,
                 block_hash: _,
@@ -296,7 +296,11 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
                         println!("{}", DisplayMsg::CannotFindRelevantContractCode);
                     }
                 };
-            }
+            },
+            Ok(StateResponseV2::Error { error }) => {
+                println!("{}", DisplayMsg::RespnoseWithHTTPError(format!("{:?}", error)));
+                std::process::exit(1);
+            },
             Err(e) => {
                 println!("{}", DisplayMsg::RespnoseWithHTTPError(e));
                 std::process::exit(1);
@@ -304,7 +308,7 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
         },
         ClientResponse::State(result) => {
             let state = match result {
-                Ok(StateResponse {
+                Ok(StateResponseV2::Ok {
                     accounts: _,
                     storage_tuples,
                     block_hash: _,
@@ -314,7 +318,11 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
                     } else {
                         unreachable!()
                     }
-                }
+                },
+                Ok(StateResponseV2::Error { error }) => {
+                    println!("{}", DisplayMsg::RespnoseWithHTTPError(format!("{:?}", error)));
+                    std::process::exit(1);
+                },
                 Err(e) => {
                     println!("{}", DisplayMsg::RespnoseWithHTTPError(e));
                     std::process::exit(1);
@@ -326,7 +334,7 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
         }
         ClientResponse::Balance(result) => {
             let balance = match result {
-                Ok(StateResponse {
+                Ok(StateResponseV2::Ok {
                     accounts,
                     storage_tuples: _,
                     block_hash: _,
@@ -343,7 +351,11 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
                     } else {
                         unreachable!()
                     }
-                }
+                },
+                Ok(StateResponseV2::Error { error }) => {
+                    println!("{}", DisplayMsg::RespnoseWithHTTPError(format!("{:?}", error)));
+                    std::process::exit(1);
+                },
                 Err(e) => {
                     println!("{}", DisplayMsg::RespnoseWithHTTPError(e));
                     std::process::exit(1);
@@ -354,7 +366,7 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
         }
         ClientResponse::Nonce(result) => {
             let nonce = match result {
-                Ok(StateResponse {
+                Ok(StateResponseV2::Ok {
                     accounts,
                     storage_tuples: _,
                     block_hash: _,
@@ -371,7 +383,11 @@ pub fn display_beautified_rpc_result(response: ClientResponse) {
                     } else {
                         unreachable!()
                     }
-                }
+                },
+                Ok(StateResponseV2::Error { error }) => {
+                    println!("{}", DisplayMsg::RespnoseWithHTTPError(format!("{:?}", error)));
+                    std::process::exit(1);
+                },
                 Err(e) => {
                     println!("{}", DisplayMsg::RespnoseWithHTTPError(e));
                     std::process::exit(1);
@@ -562,14 +578,14 @@ pub enum ClientResponse {
         Result<SubmitTransactionResponseV2, ErrorResponse>,
         pchain_types::rpc::TransactionV1OrV2,
     ),
-    Balance(Result<StateResponse, ErrorResponse>),
-    Nonce(Result<StateResponse, ErrorResponse>),
-    Contract(Result<StateResponse, ErrorResponse>, Option<Destination>),
+    Balance(Result<StateResponseV2, ErrorResponse>),
+    Nonce(Result<StateResponseV2, ErrorResponse>),
+    Contract(Result<StateResponseV2, ErrorResponse>, Option<Destination>),
     Block(Result<BlockResponseV2, ErrorResponse>),
     BlockHeader(Result<BlockHeaderResponseV2, ErrorResponse>),
     Transaction(Result<TransactionResponseV2, ErrorResponse>),
     Receipt(Result<ReceiptResponseV2, ErrorResponse>),
-    State(Result<StateResponse, ErrorResponse>),
+    State(Result<StateResponseV2, ErrorResponse>),
     PreviousValidatorSet(Result<ValidatorSetsResponse, ErrorResponse>),
     CurrentValidatorSet(Result<ValidatorSetsResponse, ErrorResponse>),
     NextValidatorSet(Result<ValidatorSetsResponse, ErrorResponse>),
