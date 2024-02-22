@@ -5,7 +5,7 @@
 
 //! Methods related to subcommand `submit` in `pchain-client`.
 
-use pchain_client::ClientV2;
+use pchain_client::Client;
 use serde_json::Value;
 use std::path::PathBuf;
 
@@ -27,7 +27,7 @@ use crate::utils::read_file_to_utf8string;
 //
 pub async fn match_submit_subcommand(tx_subcommand: Transaction, config: Config) {
     let url = config.get_url();
-    let pchain_client_v2 = ClientV2::new(url);
+    let pchain_client = Client::new(url);
 
     match tx_subcommand {
         Transaction::Submit { file, keypair_name } => {
@@ -47,7 +47,7 @@ pub async fn match_submit_subcommand(tx_subcommand: Transaction, config: Config)
                 }
             };
 
-            let response = pchain_client_v2.submit_transaction(&signed_tx).await;
+            let response = pchain_client.submit_transaction_v2(&signed_tx).await;
 
             display_beautified_rpc_result(ClientResponse::SubmitTx(response, signed_tx))
         }

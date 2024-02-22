@@ -5,7 +5,7 @@
 
 //! Methods related to subcommand `query` in `pchain-client`.
 
-use pchain_client::ClientV2;
+use pchain_client::Client;
 use pchain_types::rpc::*;
 use serde_json::Value;
 use std::collections::{HashMap, HashSet};
@@ -26,7 +26,7 @@ use crate::utils::read_file_to_utf8string;
 //
 pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
     let url = config.get_url();
-    let pchain_client_v2 = ClientV2::new(url);
+    let pchain_client = Client::new(url);
 
     match query_subcommand {
         Query::Balance { address } => {
@@ -46,8 +46,8 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                     }
                 };
 
-            let response = pchain_client_v2
-                .state(&StateRequest {
+            let response = pchain_client
+                .state_v2(&StateRequest {
                     accounts: HashSet::from([sender_address]),
                     include_contract: false,
                     storage_keys: HashMap::from([]),
@@ -73,8 +73,8 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                     }
                 };
 
-            let response = pchain_client_v2
-                .state(&StateRequest {
+            let response = pchain_client
+                .state_v2(&StateRequest {
                     accounts: HashSet::from([sender_address]),
                     include_contract: false,
                     storage_keys: HashMap::from([]),
@@ -103,8 +103,8 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                     }
                 };
 
-            let response = pchain_client_v2
-                .state(&StateRequest {
+            let response = pchain_client
+                .state_v2(&StateRequest {
                     accounts: HashSet::from([contract_address]),
                     include_contract: true,
                     storage_keys: HashMap::from([]),
@@ -126,7 +126,7 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
             latest,
         } => {
             if latest {
-                let response = pchain_client_v2.highest_committed_block().await;
+                let response = pchain_client.highest_committed_block().await;
 
                 let block_hash = match response {
                     Ok(HighestCommittedBlockResponse {
@@ -149,20 +149,20 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                         tx_hash: _,
                         latest: _,
                     } => {
-                        let response = pchain_client_v2
-                            .block_header(&BlockHeaderRequest { block_hash })
+                        let response = pchain_client
+                            .block_header_v2(&BlockHeaderRequest { block_hash })
                             .await;
 
                         display_beautified_rpc_result(ClientResponse::BlockHeader(response));
                     }
                     _ => {
-                        let response = pchain_client_v2.block(&BlockRequest { block_hash }).await;
+                        let response = pchain_client.block_v2(&BlockRequest { block_hash }).await;
 
                         display_beautified_rpc_result(ClientResponse::Block(response));
                     }
                 };
             } else if let Some(block_height) = block_height {
-                let response = pchain_client_v2
+                let response = pchain_client
                     .block_hash_by_height(&BlockHashByHeightRequest { block_height })
                     .await;
 
@@ -188,14 +188,14 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                         tx_hash: _,
                         latest: _,
                     } => {
-                        let response = pchain_client_v2
-                            .block_header(&BlockHeaderRequest { block_hash })
+                        let response = pchain_client
+                            .block_header_v2(&BlockHeaderRequest { block_hash })
                             .await;
 
                         display_beautified_rpc_result(ClientResponse::BlockHeader(response));
                     }
                     _ => {
-                        let response = pchain_client_v2.block(&BlockRequest { block_hash }).await;
+                        let response = pchain_client.block_v2(&BlockRequest { block_hash }).await;
 
                         display_beautified_rpc_result(ClientResponse::Block(response));
                     }
@@ -224,14 +224,14 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                         tx_hash: _,
                         latest: _,
                     } => {
-                        let response = pchain_client_v2
-                            .block_header(&BlockHeaderRequest { block_hash })
+                        let response = pchain_client
+                            .block_header_v2(&BlockHeaderRequest { block_hash })
                             .await;
 
                         display_beautified_rpc_result(ClientResponse::BlockHeader(response));
                     }
                     _ => {
-                        let response = pchain_client_v2.block(&BlockRequest { block_hash }).await;
+                        let response = pchain_client.block_v2(&BlockRequest { block_hash }).await;
 
                         display_beautified_rpc_result(ClientResponse::Block(response));
                     }
@@ -253,7 +253,7 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                         }
                     };
 
-                let response = pchain_client_v2
+                let response = pchain_client
                     .transaction_position(&TransactionPositionRequest { transaction_hash })
                     .await;
 
@@ -280,14 +280,14 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                         tx_hash: _,
                         latest: _,
                     } => {
-                        let response = pchain_client_v2
-                            .block_header(&BlockHeaderRequest { block_hash })
+                        let response = pchain_client
+                            .block_header_v2(&BlockHeaderRequest { block_hash })
                             .await;
 
                         display_beautified_rpc_result(ClientResponse::BlockHeader(response));
                     }
                     _ => {
-                        let response = pchain_client_v2.block(&BlockRequest { block_hash }).await;
+                        let response = pchain_client.block_v2(&BlockRequest { block_hash }).await;
 
                         display_beautified_rpc_result(ClientResponse::Block(response));
                     }
@@ -311,8 +311,8 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                     }
                 };
 
-            let response = pchain_client_v2
-                .transaction(&TransactionRequest {
+            let response = pchain_client
+                .transaction_v2(&TransactionRequest {
                     transaction_hash: tx_hash,
                     include_receipt: true,
                 })
@@ -337,8 +337,8 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                     }
                 };
 
-            let response = pchain_client_v2
-                .receipt(&ReceiptRequest {
+            let response = pchain_client
+                .receipt_v2(&ReceiptRequest {
                     transaction_hash: tx_hash,
                 })
                 .await;
@@ -376,8 +376,8 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                 }
             };
 
-            let response = pchain_client_v2
-                .state(&StateRequest {
+            let response = pchain_client
+                .state_v2(&StateRequest {
                     accounts: HashSet::from([]),
                     include_contract: true,
                     storage_keys: HashMap::from([(
@@ -456,8 +456,8 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                 None => None,
             };
 
-            let response = pchain_client_v2
-                .view(&ViewRequest {
+            let response = pchain_client
+                .view_v2(&ViewRequest {
                     target: contract_address,
                     method: method.into_bytes(),
                     arguments,
@@ -470,7 +470,7 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
             validator_subcommand,
         } => match validator_subcommand {
             Validators::Previous { with_delegator } => {
-                let response = pchain_client_v2
+                let response = pchain_client
                     .validator_sets(&ValidatorSetsRequest {
                         include_prev: true,
                         include_prev_delegators: with_delegator,
@@ -484,7 +484,7 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                 display_beautified_rpc_result(ClientResponse::PreviousValidatorSet(response));
             }
             Validators::Current { with_delegator } => {
-                let response = pchain_client_v2
+                let response = pchain_client
                     .validator_sets(&ValidatorSetsRequest {
                         include_prev: false,
                         include_prev_delegators: false,
@@ -498,7 +498,7 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                 display_beautified_rpc_result(ClientResponse::CurrentValidatorSet(response));
             }
             Validators::Next { with_delegator } => {
-                let response = pchain_client_v2
+                let response = pchain_client
                     .validator_sets(&ValidatorSetsRequest {
                         include_prev: false,
                         include_prev_delegators: false,
@@ -545,7 +545,7 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                     }
                 };
 
-            let response = pchain_client_v2
+            let response = pchain_client
                 .deposits(&DepositsRequest {
                     stakes: HashSet::from([(operator, owner)]),
                 })
@@ -573,7 +573,7 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                     }
                 };
 
-            let response = pchain_client_v2
+            let response = pchain_client
                 .pools(&PoolsRequest {
                     operators: HashSet::from([operator]),
                     include_stakes: with_stakes,
@@ -615,7 +615,7 @@ pub async fn match_query_subcommand(query_subcommand: Query, config: Config) {
                     }
                 };
 
-            let response = pchain_client_v2
+            let response = pchain_client
                 .stakes(&StakesRequest {
                     stakes: HashSet::from([(operator, owner)]),
                 })

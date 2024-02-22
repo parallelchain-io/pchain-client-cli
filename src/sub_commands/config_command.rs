@@ -6,7 +6,7 @@
 //! Methods related to subcommand `setup` in `pchain-client`.
 
 use config::Config;
-use pchain_client::{ClientV2, NetworkProvider};
+use pchain_client::{Client, NetworkProvider};
 
 use crate::command::ConfigCommand;
 use crate::config;
@@ -21,7 +21,7 @@ pub async fn match_setup_subcommand(setup_subcommand: ConfigCommand) {
     match setup_subcommand {
         ConfigCommand::Setup { url } => {
             let url = url.trim().trim_end_matches('/').to_string();
-            if !ClientV2::new(&url).is_provider_up().await {
+            if !Client::new(&url).is_provider_up().await {
                 println!("{}", DisplayMsg::InavtiveRPCProvider(url));
                 std::process::exit(1);
             }
@@ -33,7 +33,7 @@ pub async fn match_setup_subcommand(setup_subcommand: ConfigCommand) {
             let url = config.get_url();
 
             println!("{}", DisplayMsg::ListRPCProvider(url.to_string()));
-            if !ClientV2::new(url).is_provider_up().await {
+            if !Client::new(url).is_provider_up().await {
                 println!("{}", DisplayMsg::InavtiveRPCProvider(String::from(url)));
             } else {
                 println!("{}", DisplayMsg::ActiveRPCProvider(String::from(url)))
